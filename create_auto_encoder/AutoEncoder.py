@@ -9,10 +9,9 @@ class AutoEncoder(nn.Module):
         super(AutoEncoder, self).__init__()
 
         self.encoder = nn.Sequential(
-            nn.Conv2d(1, 16, kernel_size=3, stride=2, padding=1),  # [B, 1, H, W] -> [B, 16, H/2, W/2]
+            nn.Conv2d(1, 16, kernel_size=3, stride=2, padding=1),
             nn.ReLU(),
-            nn.Conv2d(16, 32, kernel_size=3, stride=2, padding=1),  # [B, 32, H/4, W/4]
-            nn.ReLU(),
+            nn.Conv2d(16, 32, kernel_size=3, stride=2, padding=1),
         )
 
         self.flatten = nn.Flatten(start_dim=2)  # [B, C, H, W] -> [B, C, HW]
@@ -24,11 +23,15 @@ class AutoEncoder(nn.Module):
             nn.ConvTranspose2d(16, 1, kernel_size=4, stride=2, padding=1),   # [B, 1, H, W]
             nn.Sigmoid(),
         )
+        
+        self.mlp = nn.LazyLinear(out_features=latent_size)
     
-    def encode(spectrogram: torch.Tensor) -> torch.Tensor:
-        pass
+    def encode(self, spectrogram: torch.Tensor) -> torch.Tensor:
+        return self.mlp(self.encoder(spectrogram))
     
     
-    def decode(latent: torch.Tensor) -> torch.Tensor:
-        pass
+    def decode(self, latent: torch.Tensor) -> torch.Tensor:
+        return self.decoder(latent)
+    
+    
     

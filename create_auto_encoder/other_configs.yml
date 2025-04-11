@@ -1,8 +1,8 @@
 Dataset:
-  AudioSet:
+  Audioset:
     train:
-      sample_path: "../data/audioset/train"
-      json_path: "../data/audioset/train/Audioset.json"
+      sample_path: "/home/mux/code_workspace/multi-ae-ace/data/audioset/train"
+      json_path: "/home/mux/code_workspace/multi-ae-ace/data/audioset/train/AudioSet.json"
     eval:
-      sample_path: "../data/audioset/eval"
-      json_path: "../data/audioset/eval/Audioset.json"
+      sample_path: "/home/mux/code_workspace/multi-ae-ace/data/udioset/eval"
+      json_path: "/home/mux/code_workspace/multi-ae-ace/data/audioset/eval/AudioSet.json"
