@@ -1,0 +1,11 @@
+TrainProcessControl:
+  Epoch: 500
+  BatchSize: 128
+  LearningRate: 1e-3
+  Optimizer:
+    Type: Adam
+    WeightDecay: 5e-5
+  Scheduler:
+    Type: StepLR
+    StepSize: 10
+    Gamma: 0.5

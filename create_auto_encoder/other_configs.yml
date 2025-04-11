@@ -1,0 +1,8 @@
+Dataset:
+  AudioSet:
+    train:
+      sample_path: "../data/audioset/train"
+      json_path: "../data/audioset/train/Audioset.json"
+    eval:
+      sample_path: "../data/audioset/eval"
+      json_path: "../data/audioset/eval/Audioset.json"

@@ -11,3 +11,8 @@ else
   git clone https://github.com/LinhMuks-DFox/MuxKit.AudioSet.IO
   mv MuxKit.AudioSet.IO/ MuxKitAudioSetIO
 fi
+if [ -d "esc-50-io" ]; then
+  echo "esc-50-io already exists. Skipping clone."
+else
+  git clone git@github.com:LinhMuks-DFox/esc-50-io.git
+fi
