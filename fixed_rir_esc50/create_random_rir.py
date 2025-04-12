@@ -2,6 +2,7 @@ import argparse
 import numpy as np
 import pyroomacoustics as pra
 import torch
+import matplotlib.pyplot as plt
 
 def main():
     parser = argparse.ArgumentParser(description="Generate filters (RIR) for ESC-50 classes.")
@@ -11,10 +12,11 @@ def main():
                         help='List of category indices (0-49) from ESC-50 to process')
     parser.add_argument('--out_dir', type=str, default='.',
                         help='Output directory to save the RIR tensors')
+    parser.add_argument('--plot', action='store_true', help='Show a 2D plot of the room, source, and mic positions')
     args = parser.parse_args()
 
     # 固定房间大小
-    room_dim = [8.0, 6.0]  # 8米 x 6米
+    room_dim = [8.0, 6.0, 4.0]  # 改为3D房间，增加高度维度
     fs = 16000             # 采样率
 
     # 为 50 个类别预先定义/随机生成声源位置
@@ -24,7 +26,8 @@ def main():
     for cat in range(50):
         sx = np.random.uniform(0.5, room_dim[0] - 0.5)
         sy = np.random.uniform(0.5, room_dim[1] - 0.5)
-        source_positions[cat] = [sx, sy]
+        sz = np.random.uniform(0.5, room_dim[2] - 0.5)
+        source_positions[cat] = [sx, sy, sz]
 
     # 先预先存储所有 RIR，便于计算最大长度
     all_rir_data = {}  # 结构: { category: [rir_mic0, rir_mic1, ... rir_micN], ... }
@@ -47,10 +50,30 @@ def main():
         for i in range(args.num_mics):
             mx = np.random.uniform(0.3, room_dim[0] - 0.3)
             my = np.random.uniform(0.3, room_dim[1] - 0.3)
-            mic_positions.append([mx, my])
+            mz = np.random.uniform(0.3, room_dim[2] - 0.3)
+            mic_positions.append([mx, my, mz])
+
+        # Plot the layout if the plot flag is set
+        if args.plot:
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            ax.set_xlim(0, room_dim[0])
+            ax.set_ylim(0, room_dim[1])
+            ax.set_zlim(0, room_dim[2])
+            
+            # 绘制声源位置
+            ax.scatter(source_loc[0], source_loc[1], source_loc[2], c='red', marker='*', s=100, label='Source')
+            
+            # 绘制麦克风位置
+            for i, (mx, my, mz) in enumerate(mic_positions):
+                ax.scatter(mx, my, mz, c='blue', marker='o')
+                ax.text(mx + 0.05, my + 0.05, mz, f'Mic{i}', fontsize=9)
+            
+            ax.set_title(f"Category={cat}")
+            plt.savefig(f"{args.out_dir}/categroy{cat}_plot.png")
 
         # 将麦克风阵列添加到房间
-        mic_array = np.array(mic_positions).T  # shape = (2, num_mics)
+        mic_array = np.array(mic_positions).T  # shape = (3, num_mics)
         room.add_microphone_array(mic_array)
 
         # 计算 RIR
