@@ -178,3 +178,6 @@ AudioSet/
 lib/
 create_auto_encoder/lib
 ipynb_checkpoints/
+create_auto_encoder/email_config.yml
+*.log
+*log*

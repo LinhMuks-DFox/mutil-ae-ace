@@ -1,6 +1,6 @@
 TrainProcessControl:
   Epoch: 500
-  BatchSize: 128
+  BatchSize: 100
   LearningRate: 1e-3
   Optimizer:
     Type: Adam
@@ -9,6 +9,7 @@ TrainProcessControl:
     Type: ReduceLROnPlateau
     patience: 10
   device: cuda
+  val_interval: 5
 
 ToLogMelSpectrogram:
   sample_rate: 16000

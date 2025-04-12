@@ -83,6 +83,9 @@ class AutoEncoder(nn.Module):
         return x
 
     def forward(self, x):
+        if x.dim() > 3:
+            batch_size, _1, h, w = x.shape
+            x = x.view(batch_size, h, w)
         z = self.encode(x)
         x_hat = self.decode(z)
         if x_hat.shape[-1] != x.shape[-1]:

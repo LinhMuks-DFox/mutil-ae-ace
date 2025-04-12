@@ -10,7 +10,7 @@ class AudioSet(tch_data.Dataset):
         sample = self.underlying_data_reader[idx][0]
         if self.transform:
             sample = self.transform(sample)
-        return sample
+        return sample, torch.empty(0)
     def __len__(self):
         return len(self.underlying_data_reader)
     
