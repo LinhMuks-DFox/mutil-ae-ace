@@ -1,5 +1,5 @@
 TrainProcessControl:
-  Epoch: 500
+  Epoch: 200
   BatchSize: 100
   LearningRate: 1e-3
   Optimizer:
