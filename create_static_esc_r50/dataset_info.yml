@@ -1,0 +1,3 @@
+Dataset:
+  ESC50:
+    path: /home/mux/code_workspace/multi-ae-ace/data/ESC-50-master/

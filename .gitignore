@@ -181,3 +181,5 @@ ipynb_checkpoints/
 create_auto_encoder/email_config.yml
 *.log
 *log*
+*checkpoint*/
+*.png

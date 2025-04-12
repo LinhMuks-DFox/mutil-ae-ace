@@ -1,6 +1,6 @@
 TrainProcessControl:
-  Epoch: 200
-  BatchSize: 100
+  Epoch: 1
+  BatchSize: 380
   LearningRate: 1e-3
   Optimizer:
     Type: Adam
@@ -39,6 +39,6 @@ DatasetInfo:
 
 
 CacheableDataset:
-  max_cache_size: 15000
+  max_cache_size: 20000
   multiprocessing: False
   device: cuda
