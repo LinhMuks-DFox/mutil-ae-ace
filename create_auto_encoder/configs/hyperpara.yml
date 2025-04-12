@@ -1,6 +1,6 @@
 TrainProcessControl:
   Epoch: 300
-  BatchSize: 380
+  BatchSize: 1024
   LearningRate: 1e-3
   Optimizer:
     Type: Adam
