@@ -1,5 +1,5 @@
 TrainProcessControl:
-  Epoch: 1
+  Epoch: 300
   BatchSize: 380
   LearningRate: 1e-3
   Optimizer:
@@ -18,8 +18,8 @@ ToLogMelSpectrogram:
   n_mels: 80
 
 TimeSequenceLengthFixer:
-  mode: start
-  fixed_length: 10 #s, same as dataset
+  mode: r
+  fixed_length: 5 #s, same as dataset
   sample_rate: 16000
 
 Resample:
@@ -31,7 +31,7 @@ SoundTrackSelector:
 
 AutoEncoder:
   n_mel: 80
-  latent_size: 600
+  latent_size: 300
   num_heads: 2
 
 DatasetInfo:

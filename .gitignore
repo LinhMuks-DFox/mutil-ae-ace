@@ -185,3 +185,5 @@ email_config.yml
 *checkpoint*/
 *.png
 dataset_info.yml
+
+*.pt
