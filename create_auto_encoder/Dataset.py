@@ -11,40 +11,45 @@ class AudioSet(tch_data.Dataset):
         if self.transform:
             sample = self.transform(sample)
         return sample
+    def __len__(self):
+        return len(self.underlying_data_reader)
     
-def create_from_yaml(yaml_obj, train=True, eval=True):
-    """
-    Create AudioSet dataset(s) from YAML configuration.
-    
-    Args:
-        yaml_obj: The loaded YAML configuration object.
-        train: Whether to load the training dataset.
-        eval: Whether to load the evaluation dataset.
-    
-    Returns:
-        A tuple (train_dataset, eval_dataset), where each may be None.
-    """
-    train_dataset = None
-    eval_dataset = None
+    @staticmethod
+    def from_yaml(yaml_obj, train=True, eval=True):
+        """
+        Create AudioSet dataset(s) from YAML configuration.
+        
+        Args:
+            yaml_obj: The loaded YAML configuration object.
+            train: Whether to load the training dataset.
+            eval: Whether to load the evaluation dataset.
+        
+        Returns:
+            A tuple (train_dataset, eval_dataset), where each may be None.
+        """
+        train_dataset = None
+        eval_dataset = None
 
-    if train and "train" in yaml_obj["Dataset"]["Audioset"]:
-        t_cfg = yaml_obj["Dataset"]["Audioset"]["train"]
-        train_dataset = AudioSet(
-            t_cfg["json_path"],
-            t_cfg["sample_path"],
-            None
-        )
+        if train and "train" in yaml_obj["Dataset"]["Audioset"]:
+            t_cfg = yaml_obj["Dataset"]["Audioset"]["train"]
+            train_dataset = AudioSet(
+                t_cfg["json_path"],
+                t_cfg["sample_path"],
+                None
+            )
 
-    if eval and "eval" in yaml_obj["Dataset"]["Audioset"]:
-        e_cfg = yaml_obj["Dataset"]["Audioset"]["eval"]
-        eval_dataset = AudioSet(
-            e_cfg["json_path"],
-            e_cfg["sample_path"],
-            None
-        )
+        if eval and "eval" in yaml_obj["Dataset"]["Audioset"]:
+            e_cfg = yaml_obj["Dataset"]["Audioset"]["eval"]
+            eval_dataset = AudioSet(
+                e_cfg["json_path"],
+                e_cfg["sample_path"],
+                None
+            )
 
-    return train_dataset, eval_dataset
+        return train_dataset, eval_dataset
+  
     
+  
 if __name__ == "__main__":
     import yaml
     with open("other_configs.yml", "r") as f:

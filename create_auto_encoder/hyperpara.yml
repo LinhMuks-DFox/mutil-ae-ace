@@ -6,24 +6,38 @@ TrainProcessControl:
     Type: Adam
     WeightDecay: 5e-5
   Scheduler:
-    Type: StepLR
-    StepSize: 10
-    Gamma: 0.5
+    Type: ReduceLROnPlateau
+    patience: 10
+  device: cuda
+
 ToLogMelSpectrogram:
   sample_rate: 16000
   n_fft: 400
   hop_length: 160
   n_mels: 80
 
+TimeSequenceLengthFixer:
+  mode: start
+  fixed_length: 10 #s, same as dataset
+  sample_rate: 16000
+
 Resample:
-  orig_sr: 44100
-  new_sr: 16000
+  orig_freq: 44100
+  new_freq: 16000
 
 SoundTrackSelector:
   mode: mix
 
 AutoEncoder:
+  n_mel: 80
   latent_size: 600
+  num_heads: 2
 
 DatasetInfo:
   duration: 10 # s
+
+
+CacheableDataset:
+  max_cache_size: 15000
+  multiprocessing: False
+  device: cuda

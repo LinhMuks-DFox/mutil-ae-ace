@@ -1,37 +1,90 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from collections import OrderedDict
+
+
+class ShapeNavigator(nn.Module):
+    def __init__(self, label=""):
+        super().__init__()
+        self.label = label
+
+    def forward(self, x):
+        print(f"[{self.label}] shape: {x.shape}")
+        return x
+
+
+class SelfAttention(nn.Module):
+    def __init__(self, embed_dim, num_heads=2, ffn_hidden=128):
+        super().__init__()
+        self.attn = nn.MultiheadAttention(embed_dim, num_heads, batch_first=True)
+        self.norm1 = nn.LayerNorm(embed_dim)
+        self.ffn = nn.Sequential(
+            nn.Linear(embed_dim, ffn_hidden),
+            nn.ReLU(),
+            nn.Linear(ffn_hidden, embed_dim)
+        )
+        self.norm2 = nn.LayerNorm(embed_dim)
+
+    def forward(self, x):
+        x = x.transpose(1, 2)  # (B, C, T) -> (B, T, C)
+        attn_out, _ = self.attn(x, x, x)
+        x = self.norm1(x + attn_out)
+        ffn_out = self.ffn(x)
+        x = self.norm2(x + ffn_out)
+        return x.transpose(1, 2)  # (B, T, C) -> (B, C, T)
+
 
 class AutoEncoder(nn.Module):
-    """Audio AutoEncoder using 2D CNNs and a Multihead Attention layer"""
-
-    def __init__(self, latent_size: int, num_heads: int = 2):
+    def __init__(self, n_mel: int = 80, latent_size: int = 128, num_heads: int = 2):
         super(AutoEncoder, self).__init__()
+        self.n_mel = n_mel
+        self.latent_size = latent_size
+        self.feature_len = None  # set after first forward
 
-        self.encoder = nn.Sequential(
-            nn.Conv2d(1, 16, kernel_size=3, stride=2, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(16, 32, kernel_size=3, stride=2, padding=1),
-        )
+        self.encoder = nn.Sequential(OrderedDict([
+            ("conv1", nn.Conv1d(n_mel, n_mel // 2, kernel_size=5, stride=1)),
+            ("relu1", nn.ReLU()),
+            ("attn", SelfAttention(embed_dim=n_mel // 2, num_heads=num_heads)),
+            ("relu2", nn.ReLU()),
+            ("conv2", nn.Conv1d(n_mel // 2, n_mel // 4, kernel_size=7, stride=2)),
+            ("relu3", nn.ReLU()),
+            ("conv3", nn.Conv1d(n_mel // 4, n_mel // 4, kernel_size=11, stride=3)),
+            ("relu4", nn.ReLU()),
+        ]))
+        self.encoder_flatten = nn.Flatten()
+        self.encoder_projection : nn.Module | None = None  # to be initialized on forward
+        self.decoder_input_linear : nn.Module | None = None # to be initialized on forward
+        self.decoder_unflatten : nn.Module | None = None    # to be initialized on forward
+        self.decoder_post = nn.Sequential(OrderedDict([
+            ("deconv1", nn.ConvTranspose1d(n_mel // 4, n_mel // 4, kernel_size=11, stride=3)),
+            ("relu1", nn.ReLU()),
+            ("deconv2", nn.ConvTranspose1d(n_mel // 4, n_mel // 2, kernel_size=7, stride=2)),
+            ("relu2", nn.ReLU()),
+            ("deconv3", nn.ConvTranspose1d(n_mel // 2, n_mel, kernel_size=5, stride=1)),
+        ]))
 
-        self.flatten = nn.Flatten(start_dim=2)  # [B, C, H, W] -> [B, C, HW]
-        self.attn = nn.MultiheadAttention(embed_dim=32, num_heads=num_heads, batch_first=True)
+    def encode(self, x: torch.Tensor) -> torch.Tensor:
+        ret = self.encoder(x)
+        if self.encoder_projection is None:
+            flattened_shape = self.encoder_flatten(ret).shape[1]
+            self.encoder_projection = nn.Linear(flattened_shape, self.latent_size).to(ret.device)
+            self.decoder_input_linear = nn.Linear(self.latent_size, flattened_shape).to(ret.device)
+            self.decoder_unflatten = nn.Unflatten(1, unflattened_size=ret.shape[1:])
+        ret = self.encoder_flatten(ret)
+        ret = self.encoder_projection(ret)
+        return ret
 
-        self.decoder = nn.Sequential(
-            nn.ConvTranspose2d(32, 16, kernel_size=4, stride=2, padding=1),  # [B, 16, H/2, W/2]
-            nn.ReLU(),
-            nn.ConvTranspose2d(16, 1, kernel_size=4, stride=2, padding=1),   # [B, 1, H, W]
-            nn.Sigmoid(),
-        )
-        
-        self.mlp = nn.LazyLinear(out_features=latent_size)
-    
-    def encode(self, spectrogram: torch.Tensor) -> torch.Tensor:
-        return self.mlp(self.encoder(spectrogram))
-    
-    
-    def decode(self, latent: torch.Tensor) -> torch.Tensor:
-        return self.decoder(latent)
-    
-    
-    
+    def decode(self, z: torch.Tensor) -> torch.Tensor:
+        assert self.decoder_input_linear is not None and self.decoder_unflatten is not None , "Uninitializd layer"
+        z = self.decoder_input_linear(z)
+        z = self.decoder_unflatten(z)
+        x = self.decoder_post(z)
+        return x
+
+    def forward(self, x):
+        z = self.encode(x)
+        x_hat = self.decode(z)
+        if x_hat.shape[-1] != x.shape[-1]:
+            x_hat = F.interpolate(x_hat, size=x.shape[-1], mode='linear', align_corners=False)
+        return x_hat

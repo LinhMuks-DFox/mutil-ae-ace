@@ -4,5 +4,5 @@ Dataset:
       sample_path: "/home/mux/code_workspace/multi-ae-ace/data/audioset/train"
       json_path: "/home/mux/code_workspace/multi-ae-ace/data/audioset/train/AudioSet.json"
     eval:
-      sample_path: "/home/mux/code_workspace/multi-ae-ace/data/udioset/eval"
+      sample_path: "/home/mux/code_workspace/multi-ae-ace/data/audioset/eval"
       json_path: "/home/mux/code_workspace/multi-ae-ace/data/audioset/eval/AudioSet.json"

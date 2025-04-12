@@ -50,7 +50,7 @@ if __name__ == "__main__":
     import Dataset
     with open("other_configs.yml", "r") as f:
         cfg = yaml.safe_load(f)
-    dataset, none = Dataset.create_from_yaml(cfg, True, False)
+    dataset, none = Dataset.AudioSet.from_yaml(cfg, True, False)
     print(dataset[0])
     
     with open("hyperpara.yml", "r") as f:
