@@ -183,3 +183,4 @@ create_auto_encoder/email_config.yml
 *log*
 *checkpoint*/
 *.png
+dataset_info.yml

@@ -304,8 +304,8 @@ class AutoEncoderTrainer:
 
 if __name__ == "__main__":
     trainer = AutoEncoderTrainer(
-        hyperpara_path="hyperpara.yml",
-        email_config_path="email_config.yml",
-        other_configs_path="other_configs.yml"
+        hyperpara_path="./configs/hyperpara.yml",
+        email_config_path="./configs/email_config.yml",
+        other_configs_path="./configs/dataset_info.yml"
     )
     trainer.run()
