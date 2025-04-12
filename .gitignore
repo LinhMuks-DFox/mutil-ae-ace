@@ -176,7 +176,8 @@ cython_debug/
 data/
 AudioSet/
 lib/
-create_auto_encoder/lib
+
+*/lib
 ipynb_checkpoints/
 email_config.yml
 *.log
