@@ -10,9 +10,9 @@
 # 定义日志文件名，包含时间戳
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 LOGFILE="autoencoder_train_${TIMESTAMP}.log"
-
+rm *.log
 # 后台运行 make_autoencoder.py，将标准输出和错误输出都重定向到日志文件
-nohup python -u create_auto_encoder/make_autoencoder.py > "$LOGFILE" 2>&1 &
+nohup python -u make_autoencoder.py > "$LOGFILE" 2>&1 &
 
 echo "AutoEncoder training started."
 echo "Logs are being written to $LOGFILE"
