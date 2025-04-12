@@ -65,6 +65,9 @@ class AutoEncoder(nn.Module):
         ]))
 
     def encode(self, x: torch.Tensor) -> torch.Tensor:
+        if x.dim() > 3:
+            batch_size, _1, h, w = x.shape
+            x = x.view(batch_size, h, w)
         ret = self.encoder(x)
         if self.encoder_projection is None:
             flattened_shape = self.encoder_flatten(ret).shape[1]

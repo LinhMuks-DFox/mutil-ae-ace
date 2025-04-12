@@ -14,7 +14,7 @@ from datetime import datetime
 from email.message import EmailMessage
 from torch.utils.data import DataLoader, random_split
 import tqdm
-
+import torchinfo
 import torchaudio.transforms as T
 from lib.AudioSet.transform import TimeSequenceLengthFixer, SoundTrackSelector
 import lib.MuxkitDeepLearningTools.dataset_tools.CachableDataset as mk_cachedata
@@ -79,7 +79,10 @@ class AutoEncoderTrainer:
 
         # 初始化AutoEncoder模型
         self.model = AutoEncoder.AutoEncoder(**self.hyper_parameter["AutoEncoder"]).to(self.device)
-
+        with torch.no_grad():
+            data0, _ = self.trainset[0]
+            print("Feeded Data shape: ", data0.shape)
+            torchinfo.summary(self.model, input_data=data0.unsqueeze(0))
         # 优化器和调度器
         self.optimizer = optim.Adam(
             self.model.parameters(),

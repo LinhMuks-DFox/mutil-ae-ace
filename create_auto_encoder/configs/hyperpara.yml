@@ -42,3 +42,6 @@ CacheableDataset:
   max_cache_size: 20000
   multiprocessing: False
   device: cuda
+
+AutoEncoderInitDummyInput:
+  shape: [1, 80, 501]
