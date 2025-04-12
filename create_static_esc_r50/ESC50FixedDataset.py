@@ -11,7 +11,6 @@ class ESC50FixedDataset(Dataset):
         split (str): "train"、"test" 或 "validate"。
     """
     def __init__(self, file_path: str, split: str = "train"):
-        # 加载已经固定好的 ESC50 数据 (train/test/validate)
         loaded_data = torch.load(file_path)
         
         if split not in loaded_data:
@@ -27,3 +26,22 @@ class ESC50FixedDataset(Dataset):
     def __len__(self):
         # 数据集大小
         return len(self.data_tensor)
+    
+if __name__ == "__main__": 
+    from torch.utils.data import DataLoader
+    # 假设之前保存好的固定 ESC50 数据集文件为 "esc50_fixed_dataset.pt"
+    dataset_path = "esc50_fixed_dataset.pt"
+
+    # 以 train 分割为例创建数据集实例
+    train_dataset = ESC50FixedDataset(dataset_path, split="train")
+
+    # 简单测试：打印数据集大小和前 1 条样本
+    print("Number of samples in train split:", len(train_dataset))
+
+    # 创建 DataLoader 并取一个批次演示
+    train_loader = DataLoader(train_dataset, batch_size=2, shuffle=True)
+    for audio_batch, label_batch in train_loader:
+        print("Audio batch shape:", audio_batch.shape)    # (batch_size, waveform_length)
+        print("Label batch shape:", label_batch.shape)    # (batch_size, num_classes)
+        # 只示例一次就 break
+        break
