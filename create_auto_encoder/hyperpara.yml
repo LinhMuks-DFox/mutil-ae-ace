@@ -9,3 +9,21 @@ TrainProcessControl:
     Type: StepLR
     StepSize: 10
     Gamma: 0.5
+ToLogMelSpectrogram:
+  sample_rate: 16000
+  n_fft: 400
+  hop_length: 160
+  n_mels: 80
+
+Resample:
+  orig_sr: 44100
+  new_sr: 16000
+
+SoundTrackSelector:
+  mode: mix
+
+AutoEncoder:
+  latent_size: 600
+
+DatasetInfo:
+  duration: 10 # s

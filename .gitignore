@@ -176,3 +176,5 @@ cython_debug/
 data/
 AudioSet/
 lib/
+create_auto_encoder/lib
+ipynb_checkpoints/
