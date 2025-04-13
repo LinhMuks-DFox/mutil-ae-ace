@@ -62,17 +62,20 @@ class TrainContext(Context):  # 继承自 ABCContext
         train_set = DataTensorDataset.from_datatensor_path(
             split="train",
             data_tensor_path=opt.TrainSetPath.resolve(),
-            device=self.device
+            device=self.device,
+            n_cls=hyp.N_Classes
         )
         test_set = DataTensorDataset.from_datatensor_path(
             split="test",
             data_tensor_path=opt.TestSetPath.resolve(),
-            device=self.device
+            device=self.device,
+            n_cls=hyp.N_Classes
         )
         validate_set = DataTensorDataset.from_datatensor_path(
             split="validate",
             data_tensor_path=opt.ValidatePath.resolve(),
-            device=self.device
+            device=self.device,
+            n_cls=hyp.N_Classes
         )
         self.data_preprocessor = DataPreprocessor.DataPreprocessor().to(self.device)
 
