@@ -108,6 +108,8 @@ class Trainer:
             self.one_epoch_train()
             validate_result = self.one_epoch_validation()
             self.update_scheduler()
+            if epoch < self.ctx.warm_up:
+                continue
             # Update the optimal validation epoch based on the chosen metric
             election_score, maximum = {
                 "f1": (validate_result["f1_score"], self.ctx.maximum_f1_score),
@@ -115,6 +117,7 @@ class Trainer:
                 "pre": (validate_result["precision"], self.ctx.maximum_precision),
                 "rec": (validate_result["recall"], self.ctx.maximum_recall)
             }[self.best_model_elect_score]
+
             if self.file_manager.update_optimal_validation_epoch(epoch, election_score, maximum):
                 self.ctx.maximum_f1_score = validate_result["f1_score"]
                 self.test_onset("test")  # Test on the test set for the best model

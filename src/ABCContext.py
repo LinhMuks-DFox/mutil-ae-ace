@@ -50,7 +50,8 @@ class Context(ABC):
     train_set: torch.utils.data.Dataset | None
     validate_set: torch.utils.data.Dataset | None
     test_set: torch.utils.data.Dataset | None
-
+    visualaization_loss_clamp: float | None = 10
+    warm_up: int | None = 10
     def __init__(self):
         self.device = "cpu"
         self.best_model_occ_epoch = -1
@@ -82,6 +83,14 @@ class Context(ABC):
 
     def set_device(self, device: torch.device | str):
         self.device = device
+        return self
+    
+    def set_visualaization_loss_clamp(self, visualaization_loss_clamp: float | str):
+        self.visualaization_loss_clamp = visualaization_loss_clamp
+        return self
+    
+    def set_warm_up(self, warm_up=10):
+        self.warm_up = warm_up
         return self
 
     def set_context_identifier(self, identifier: str):
