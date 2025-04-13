@@ -4,25 +4,25 @@ import typing
 import torch
 import torch.nn as nn
 import torch.optim as optimize
+import yaml
 import torch.utils.data as tch_data
 
 from lib.MuxkitTools.score_tools.ClassifierTester import MonoLabelClassificationTester
 from src.ABCContext import Context
 from src.BCAugmentationDataset import BCLearningDataset
-from src.PreprocessedDataset import create_cached_preprocessed_dataset, CacheableDataset, \
-    create_preprocessed_acoustic_dataset
-from src.SoftmaxLogKLDivLoss import SoftmaxLogKLDivLoss
-from . import hyperparameters as hyp
-from . import options as opt
 from lib.MuxkitTools.model_tools.stati import stati_model
 from src.WarpedReduceLROnPlateau import WarpedReduceLROnPlateau
 
 
-class TrainContext(Context):  # 继承自 ABCContext
+class TrainContext(Context):
     def __init__(self, serial: typing.Optional[typing.Dict[str, typing.Any]] = None):
+        
+        with open("hyper.yml", "r") as hyper_f, open("option.yml") as option_f:
+            self.hyper_yml = yaml.safe_load(hyper_f)
+            self.option_yml = yaml.safe_load(option_f)
+        
         super().__init__()
-        # 设置训练的主要参数
-        self.set_device(opt.Device) \
+        self.set_device(opt) \
             .set_epochs(hyp.Epochs) \
             .set_n_classes(hyp.N_Classes) \
             .set_compile_model(opt.CompileModel) \
