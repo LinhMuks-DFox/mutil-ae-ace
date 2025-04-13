@@ -187,3 +187,5 @@ email_config.yml
 dataset_info.yml
 
 *.pt
+
+.idea/

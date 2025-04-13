@@ -1,8 +1,10 @@
 import argparse
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pyroomacoustics as pra
 import torch
-import matplotlib.pyplot as plt
+
 
 def main():
     parser = argparse.ArgumentParser(description="Generate filters (RIR) for ESC-50 classes.")
@@ -17,7 +19,7 @@ def main():
 
     # 固定房间大小
     room_dim = [8.0, 6.0, 4.0]  # 改为3D房间，增加高度维度
-    fs = 16000             # 采样率
+    fs = 16000  # 采样率
 
     # 为 50 个类别预先定义/随机生成声源位置
     # (这里只演示随机生成，可按需改成固定映射或其他逻辑)
@@ -60,15 +62,15 @@ def main():
             ax.set_xlim(0, room_dim[0])
             ax.set_ylim(0, room_dim[1])
             ax.set_zlim(0, room_dim[2])
-            
+
             # 绘制声源位置
             ax.scatter(source_loc[0], source_loc[1], source_loc[2], c='red', marker='*', s=100, label='Source')
-            
+
             # 绘制麦克风位置
             for i, (mx, my, mz) in enumerate(mic_positions):
                 ax.scatter(mx, my, mz, c='blue', marker='o')
                 ax.text(mx + 0.05, my + 0.05, mz, f'Mic{i}', fontsize=9)
-            
+
             ax.set_title(f"Category={cat}")
             plt.savefig(f"{args.out_dir}/categroy{cat}_plot.png")
 
@@ -120,6 +122,7 @@ def main():
         out_file = f"{args.out_dir}/rir_cat_{cat}.pt"
         torch.save(rir_tensor, out_file)
         print(f"Saved RIR for category {cat} to {out_file}")
+
 
 if __name__ == "__main__":
     main()

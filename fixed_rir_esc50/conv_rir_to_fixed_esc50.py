@@ -81,39 +81,37 @@ def generate_rir_convolved_esc50(
 
 
 if __name__ == '__main__':
-    # ======= 示例用法 =======
-    esc50_path = "esc50_fixed_dataset.pt"   # 你已有的 ESC50 pt 文件
-    rir_dir = "10mic_rir"                    # 里面有 rir_cat_0.pt, rir_cat_1.pt, ...
-    
-    # 想把最终结果放到 "rir_convolved" 文件夹中
-    out_dir = f"{rir_dir}_rir_convolved"
+    import argparse
 
-    # 分别对 train/validate/test 进行处理并保存在同一个目录下
-    generate_rir_convolved_esc50(
-        esc50_fixed_pt=esc50_path,
-        rir_dir=rir_dir,
-        out_dir=out_dir,
-        split='train',
-        categories=range(50),
-        mode='full',
-        device='cuda',  # 如果有 GPU，可以使用
-        verbose=True    # 可以设置为 True 以查看详细信息
-    )
+    parser = argparse.ArgumentParser(description="Run RIR convolution on ESC50 dataset")
+    parser.add_argument('--esc50_fixed_pt', type=str, default="esc50_fixed_dataset.pt", help="Path to ESC50 fixed dataset pt file")
+    parser.add_argument('--rir_dir', type=str, required=True, help="Directory containing RIR files (e.g. 5mic_rir)")
+    parser.add_argument('--out_dir', type=str, default=None, help="Output directory. If not provided, defaults to <rir_dir>_rir_convolved")
+    parser.add_argument('--mode', type=str, default="full", help="Convolution mode for MultiFixedFilterRoomSim")
+    parser.add_argument('--device', type=str, default="cpu", help="Device to use (cpu or cuda)")
+    parser.add_argument('--verbose', action='store_true', help="Verbose output")
+    parser.add_argument('--split', type=str, choices=['train', 'validate', 'test', 'all'], default="all", help="Data split to process (train, validate, test, or all)")
+    parser.add_argument('--categories', type=str, default="range(50)", help="Categories as a Python expression, e.g., 'range(50)'")
+    args = parser.parse_args()
 
-    generate_rir_convolved_esc50(
-        esc50_fixed_pt=esc50_path,
-        rir_dir=rir_dir,
-        out_dir=out_dir,
-        split='validate',
-        device='cuda',
-        verbose=True
-    )
+    if args.out_dir is None:
+        args.out_dir = f"{args.rir_dir}_rir_convolved"
 
-    generate_rir_convolved_esc50(
-        esc50_fixed_pt=esc50_path,
-        rir_dir=rir_dir,
-        out_dir=out_dir,
-        split='test',
-        device='cuda',
-        verbose=True
-    )
+    try:
+        categories = eval(args.categories)
+    except Exception as e:
+        raise ValueError("Failed to parse categories argument. Please provide a valid Python expression.") from e
+
+    splits = [args.split] if args.split != 'all' else ['train', 'validate', 'test']
+
+    for split in splits:
+        generate_rir_convolved_esc50(
+            esc50_fixed_pt=args.esc50_fixed_pt,
+            rir_dir=args.rir_dir,
+            out_dir=args.out_dir,
+            split=split,
+            categories=categories,
+            mode=args.mode,
+            device=args.device,
+            verbose=args.verbose
+        )
