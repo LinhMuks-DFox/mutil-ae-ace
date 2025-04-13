@@ -1,12 +1,13 @@
+from typing import Union
+
 import torch
+import torchaudio
 import yaml
 
-from src.LatentDataset import RIRWaveformToMelTransform, LatentTransform
-from . import options as opt
 from src.AutoEncoder import AutoEncoder
-import torchaudio
-from typing import Union
+from src.LatentDataset import RIRWaveformToMelTransform, LatentTransform
 from . import hyperparameters as hyp
+from . import options as opt
 
 
 class AdjustForResNet(torch.nn.Module):
@@ -103,9 +104,17 @@ class DataPreprocessor(torch.nn.Module):
         self.camera = CameraResponse(hyp.SignalSourceSampleRate, hyp.CameraFrameRate)
         self.adjust = AdjustForResNet()
 
+    @staticmethod
+    def blinky_data_normalize(data: torch.Tensor):
+        with torch.no_grad():
+            data_min = torch.min(data)
+            de_min = data - data_min
+            return de_min / torch.max(de_min)
+
     @torch.no_grad()
     def forward(self, x: torch.Tensor):
         ret = self.to_latent(x)
+        ret = self.blinky_data_normalize(ret)
         ret = self.light_propagate(ret)
         ret = self.camera(ret)
         ret = self.adjust(ret)

@@ -33,4 +33,4 @@ bias = 0.1
 std = 0.05
 # Camera Response
 SignalSourceSampleRate = 15
-CameraFrameRate = 30,
+CameraFrameRate = 30

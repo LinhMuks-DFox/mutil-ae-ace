@@ -71,7 +71,7 @@ class TrainContext(Context):  # 继承自 ABCContext
             data_tensor_path=opt.ValidatePath.resolve(),
             device=self.device
         )
-        self.data_preprocessor = DataPreprocessor.DataPreprocessor()
+        self.data_preprocessor = DataPreprocessor.DataPreprocessor().to(self.device)
 
         train_set = BCLearningDataset(
             train_set, hyp.AudioSampleRate, hyp.N_Classes, self.device

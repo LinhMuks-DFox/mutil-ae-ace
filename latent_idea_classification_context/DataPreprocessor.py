@@ -36,8 +36,16 @@ class DataPreprocessor(torch.nn.Module):
             )
         self.adjust = AdjustForResNet()
 
+    @staticmethod
+    def blinky_data_normalize(data: torch.Tensor):
+        with torch.no_grad():
+            data_min = torch.min(data)
+            de_min = data - data_min
+            return de_min / torch.max(de_min)
+
     @torch.no_grad()
     def forward(self, x: torch.Tensor):
         ret = self.to_latent(x)
+        ret = self.blinky_data_normalize(ret)
         ret = self.adjust(ret)
         return ret

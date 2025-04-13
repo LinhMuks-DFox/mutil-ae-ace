@@ -15,6 +15,7 @@ class TestDataset(unittest.TestCase):
         print(
             batch0[0].shape, batch0[1].shape
         )
+
     def test_auto_encoder(self):
         torchinfo.summary(self.ctx.auto_encoder, torch.rand(1, 1, 80, 501).to(self.ctx.device))
 
