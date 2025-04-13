@@ -18,7 +18,7 @@ from . import DataPreprocessor
 from lib.MuxkitTools.audio_tools.bc_augmentation.bc_augmented_dataset import BCLearningDataset
 from lib.MuxkitTools.model_tools.stati import stati_model
 from src.WarpedReduceLROnPlateau import WarpedReduceLROnPlateau
-
+from src.SoftmaxLogKLDivLoss import SoftmaxLogKLDivLoss
 class TrainContext(Context):  # 继承自 ABCContext
 
     def __init__(self, serial: typing.Optional[typing.Dict[str, typing.Any]] = None):
@@ -41,7 +41,7 @@ class TrainContext(Context):  # 继承自 ABCContext
 
     def initialize_loss(self):
         # 使用交叉熵损失函数
-        self.loss_function: torch.nn.Module = nn.CrossEntropyLoss()
+        self.loss_function: torch.nn.Module = SoftmaxLogKLDivLoss()
 
     def initialize_optimizer(self):
         # 初始化 Adam 优化器
