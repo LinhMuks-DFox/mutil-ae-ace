@@ -32,7 +32,7 @@ class PreprocessedDataset(torch.utils.data.Dataset):
         sample, label = self.data_loader[index]
         if isinstance(label, int) and self.to_one_hot:
             label = nn.functional.one_hot(torch.tensor(label), num_classes=self.n_class)
-        sample, label = sample.to(self.device), label.to(self.device)
+        sample, label = sample.to(self.device), label.to(self.device).float()
         if self.preprocessor is not None:
             sample = self.preprocessor(sample)
         return sample, label
