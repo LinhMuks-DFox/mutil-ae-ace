@@ -7,7 +7,28 @@ import torch
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate filters (RIR) for ESC-50 classes.")
+    epilog = """\
+输出说明：
+  每个类别 (ESC-50 中的 0~49) 会对应一个 RIR 文件：
+
+    rir_cat_{类别编号}.pt
+
+  每个 RIR 文件是一个 tensor，形状为 [num_mics, max_rir_length]，每一行表示一个麦克风通道下的 RIR impulse response。
+  所有 RIR 都被统一为相同长度，短的会进行 zero-padding，长的则保留。
+
+示例调用：
+  python generate_random_RIR_for_categories.py \\
+      --num_mics 4 \\
+      --categories 0 1 2 3 \\
+      --out_dir rir_outputs \\
+      --plot
+"""
+
+    parser = argparse.ArgumentParser(
+        description="Generate filters (RIR) for ESC-50 classes.",
+        epilog=epilog,
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument('--num_mics', type=int, default=4,
                         help='Number of microphones to place in the room')
     parser.add_argument('--categories', nargs='+', default=list(range(50)),

@@ -1,8 +1,24 @@
 import os
 import torch
 import yaml
+import argparse
 from pathlib import Path
 from lib.esc50_io.ESC50IO.ESC50 import ESC50, label_balanced_split_esc50
+
+epilog = """\
+输出文件说明：
+  fixed_rir_esc50/esc50_fixed_dataset.pt 为一个 dict，包含以下键：
+
+    - 'train': (data_tensor, label_tensor)
+    - 'test': (data_tensor, label_tensor)
+    - 'validate': (data_tensor, label_tensor)
+
+  - data_tensor: torch.FloatTensor，形状 [N, ...]，表示 N 条音频数据（支持多通道）
+  - label_tensor: torch.FloatTensor，形状 [N, num_classes]，每行是 one-hot 标签
+
+使用示例：
+  python generate_fixed_balanced_esc50.py
+"""
 
 def dataset_to_tensor(subset, num_classes):
     data_list = []
@@ -22,6 +38,14 @@ def dataset_to_tensor(subset, num_classes):
     return data_tensor, label_tensor
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="Generate ESC50 fixed-format dataset with label-balanced split.",
+        epilog=epilog,
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument('--out_path', type=str, default="fixed_rir_esc50/esc50_fixed_dataset.pt", help='Output path for the fixed dataset')
+    args = parser.parse_args()
+
     print("=== Starting process... ===")
 
     # 读取数据集配置信息
@@ -52,7 +76,7 @@ def main():
     val_data, val_labels = dataset_to_tensor(val_set, num_classes)
 
     # 打包并保存
-    output_path = "fixed_rir_esc50/esc50_fixed_dataset.pt"
+    output_path = args.out_path
     print(f"Saving fixed dataset to {output_path} ...")
     fixed_dataset = {
         "train": (train_data, train_labels),

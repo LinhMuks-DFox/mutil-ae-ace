@@ -83,7 +83,32 @@ def generate_rir_convolved_esc50(
 if __name__ == '__main__':
     import argparse
 
-    parser = argparse.ArgumentParser(description="Run RIR convolution on ESC50 dataset")
+    epilog="""\
+输出说明：
+  每个 split（train / validate / test）将生成一个 .pt 文件，保存为一个 dict：
+    {'train': (data_tensor, label_tensor)}
+
+  - data_tensor: torch.FloatTensor，形状为 [N, n_mics, out_len]
+      表示 N 个样本、每个样本有 n_mics 个麦克风的 RIR 卷积结果，长度为 out_len。
+  
+  - label_tensor: torch.LongTensor，形状为 [N]
+      对应每个样本的 ESC-50 类别标签（范围 0-49 的整数）。
+
+用法示例：
+  python apply_RIR_to_flxed_esc50.py \\
+    --esc50_fixed_pt ./esc50_fixed_dataset.pt \\
+    --rir_dir ./rir_files \\
+    --out_dir ./rir_convolved_data \\
+    --split train \\
+    --categories 'range(10)' \\
+    --device cuda
+"""
+
+    parser = argparse.ArgumentParser(
+        description="Run RIR convolution on ESC50 dataset",
+        epilog=epilog,
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument('--esc50_fixed_pt', type=str, default="esc50_fixed_dataset.pt", help="Path to ESC50 fixed dataset pt file")
     parser.add_argument('--rir_dir', type=str, required=True, help="Directory containing RIR files (e.g. 5mic_rir)")
     parser.add_argument('--out_dir', type=str, default=None, help="Output directory. If not provided, defaults to <rir_dir>_rir_convolved")
