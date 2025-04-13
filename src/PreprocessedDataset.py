@@ -5,7 +5,7 @@ import torch.nn as nn
 import torch.utils
 import torch.utils.data
 
-from MuxkitTools.dataset_tools.CachableDataset import CacheableDataset
+from lib.MuxkitTools.dataset_tools.CachableDataset import CacheableDataset
 
 # A Preprocessor object or function shall take a tensor as input, mapping those tensor into processed tensor
 PreprocessorType = typing.Callable[[torch.Tensor], torch.Tensor]
@@ -32,7 +32,7 @@ class PreprocessedDataset(torch.utils.data.Dataset):
         sample, label = self.data_loader[index]
         if isinstance(label, int) and self.to_one_hot:
             label = nn.functional.one_hot(torch.tensor(label), num_classes=self.n_class)
-        sample, label = sample.to(self.device), label.to(self.device).float()
+        sample, label = sample.to(self.device), label.to(self.device)
         if self.preprocessor is not None:
             sample = self.preprocessor(sample)
         return sample, label

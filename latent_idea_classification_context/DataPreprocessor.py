@@ -1,50 +1,43 @@
 import torch
-import torchaudio.transforms as tch_audioT
+import yaml
 
-from MuxkitTools.audio_tools.transforms import SoundTrackSelector, TimeSequenceLengthFixer
-from MuxkitTools.audio_tools.utils import fix_length
-from . import hyperparameters as hyp
+from src.LatentDataset import RIRWaveformToMelTransform, LatentTransform
+from . import options as opt
+from src.AutoEncoder import AutoEncoder
+
+
+class AdjustForResNet(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+
+    @torch.no_grad()
+    def forward(self, x: torch.Tensor):
+        if x.dim() >= 3:
+            batch, n_mic, nyquis_times_5_times_4led = x.shape
+            x = x.view(batch, 1, n_mic * 4, nyquis_times_5_times_4led // 4).contiguous()
+        elif x.dim() == 2:
+            n_mic, nyquis_times_5_times_4led = x.shape
+            x = x.view(1, n_mic * 4, nyquis_times_5_times_4led // 4).contiguous()
+        return x
 
 
 class DataPreprocessor(torch.nn.Module):
 
     def __init__(self):
         super().__init__()
-        self.track_selector = SoundTrackSelector(
-            hyp.SoundTrack
-        )
-        self.resampler = tch_audioT.Resample(
-            hyp.DataSampleRate, hyp.NewSampleRate
-        )
-        self.time_fixer = TimeSequenceLengthFixer(
-            hyp.AudioDuration, hyp.NewSampleRate
-        )
-
-        self.track_selector = SoundTrackSelector(
-            hyp.SoundTrack
-        )
-        self.resampler = tch_audioT.Resample(
-            hyp.DataSampleRate, hyp.NewSampleRate
-        )
-        self.time_fixer = TimeSequenceLengthFixer(
-            hyp.AudioDuration, hyp.NewSampleRate
-        )
-
-        self.spectrogram_converter = tch_audioT.Spectrogram(
-            win_length=2047,
-            n_fft=2047
-        )
-        self.to_db = tch_audioT.AmplitudeToDB()
+        with open(opt.AutoEncoderHyper, "r") as f:
+            hyper = yaml.safe_load(f)
+            self.auto_encoder = AutoEncoder.from_structure_hyper_and_checkpoint(
+                hyper["AutoEncoder"], opt.AutoEncoderCheckPoint.resolve(), opt.Device
+            )
+            self.to_mel = RIRWaveformToMelTransform.from_hyper(hyper, opt.Device)
+            self.to_latent = LatentTransform(
+                self.to_mel, self.auto_encoder
+            )
+        self.adjust = AdjustForResNet()
 
     @torch.no_grad()
     def forward(self, x: torch.Tensor):
-        x = self.track_selector(x)
-        x = self.resampler(x)
-        x = self.time_fixer(x)
-        # n_mic, n_sample = x.shape
-        # x = x.view(n_mic, 1, n_sample).contiguous()
-        x = fix_length(x, hyp.NewSampleRate * hyp.AudioDuration)
-
-        x = self.spectrogram_converter(x)
-        x = self.to_db(x)
-        return x
+        ret = self.to_latent(x)
+        ret = self.adjust(ret)
+        return ret

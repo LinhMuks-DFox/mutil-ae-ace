@@ -1,4 +1,4 @@
-from MuxkitTools.score_tools.ClassifierTester import MetricsStatusMap, ClassifierTester
+from lib.MuxkitTools.score_tools.ClassifierTester import MetricsStatusMap, ClassifierTester
 import json
 import os
 import typing
@@ -9,7 +9,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as tch_data
-from MuxkitTools.train_tools.utils import set_manual_seed
+from lib.MuxkitTools.train_tools.utils import set_manual_seed
 
 OptionalModule = typing.Optional[torch.nn.Module]
 DataPreprocessorType = typing.Callable[[torch.Tensor, ], torch.Tensor]

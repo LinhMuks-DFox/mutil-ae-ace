@@ -1,6 +1,6 @@
 TrainProcessControl:
-  Epoch: 500
-  BatchSize: 1024
+  Epoch: 300
+  BatchSize: 1280
   LearningRate: 1e-3
   Optimizer:
     Type: Adam
@@ -18,7 +18,7 @@ ToLogMelSpectrogram:
   n_mels: 80
 
 TimeSequenceLengthFixer:
-  mode: r
+  mode: s
   fixed_length: 5 #s, same as dataset
   sample_rate: 16000
 
@@ -33,15 +33,11 @@ AutoEncoder:
   n_mel: 80
   latent_size: 300
   num_heads: 2
-
+  AutoEncoderInitDummyInput:
+    shape: [1, 80, 501]
 DatasetInfo:
   duration: 10 # s
-
-
 CacheableDataset:
   max_cache_size: 20000
   multiprocessing: False
   device: cuda
-
-AutoEncoderInitDummyInput:
-  shape: [1, 80, 501]

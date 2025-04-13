@@ -4,9 +4,9 @@ import os
 import typing
 import matplotlib.pyplot as plt
 import logging
-from MuxkitTools.plot_tools.SklearnConfusionMatrixPlotter import ConfusionMatrixPlotter
+from lib.MuxkitTools.plot_tools.SklearnConfusionMatrixPlotter import ConfusionMatrixPlotter
 from src.ABCContext import Context
-from MuxkitTools.score_tools.ClassifierTester import MetricsStatusMap
+from lib.MuxkitTools.score_tools.ClassifierTester import MetricsStatusMap
 
 _METRICS_REPORT_MSG_FMT = (
     "{dataset} F1:                {f1:<10.5g}\n"

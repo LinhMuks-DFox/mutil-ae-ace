@@ -4,6 +4,7 @@ from torch.utils.data import Dataset
 import torchaudio.transforms as T
 from src.AutoEncoder import AutoEncoder
 
+
 ########################################
 # 1) 仅负责“读取 data_tensor”的简单 Dataset
 ########################################
@@ -12,6 +13,7 @@ class DataTensorDataset(Dataset):
     只负责从 data_tensor / label_tensor 中读取 raw wave，
     不做任何 transform。允许后续在外部套上 BC 或其他操作。
     """
+
     def __init__(self, data_tensor: torch.Tensor, label_tensor: torch.Tensor, device="cuda"):
         """
         Args:
@@ -28,8 +30,20 @@ class DataTensorDataset(Dataset):
 
     def __getitem__(self, idx):
         wave_3d = self.data_tensor[idx].to(self.device)  # => [n_mics, wave_len]
-        label = self.label_tensor[idx]                   # 可能是 int，也可能是 Tensor
+        label = self.label_tensor[idx]  # 可能是 int，也可能是 Tensor
         return wave_3d, label
+
+    @staticmethod
+    def from_datatensor_path(split: str, data_tensor_path: str, device="cpu"):
+        """
+            split: train test validate in string
+        """
+        dataset_dict = torch.load(data_tensor_path, map_location=device)
+        if split not in dataset_dict:
+            raise ValueError(f"split='{split}' not found in {data_tensor_path}, available={list(dataset_dict.keys())}")
+
+        data_tensor, label_tensor = dataset_dict[split]
+        return DataTensorDataset(data_tensor, label_tensor, device)
 
 
 ########################################
@@ -41,17 +55,18 @@ class RIRWaveformToMelTransform(nn.Module):
     config["Resample"], config["TimeSequenceLengthFixer"], config["ToLogMelSpectrogram.py"]
     这里就和之前的 WaveformToMelTransform 类似。
     """
+
     def __init__(
-        self,
-        orig_freq: int,
-        new_freq: int,
-        timefix_mode: str,
-        timefix_length: int,
-        mel_sample_rate: int,
-        n_fft: int,
-        hop_length: int,
-        n_mels: int,
-        device: str = "cuda"
+            self,
+            orig_freq: int,
+            new_freq: int,
+            timefix_mode: str,
+            timefix_length: int,
+            mel_sample_rate: int,
+            n_fft: int,
+            hop_length: int,
+            n_mels: int,
+            device: str = "cuda"
     ):
         super().__init__()
         self.device = device
@@ -76,10 +91,28 @@ class RIRWaveformToMelTransform(nn.Module):
         """
         wave_3d = self.resample(wave_3d)
         wave_3d = self.time_fixer(wave_3d)
-        wave_3d = wave_3d.unsqueeze(1)     # => [n_mics, 1, wave_len_fixed]
-        mel = self.melspec(wave_3d)       # => [n_mics, n_mels, time]
+        wave_3d = wave_3d.unsqueeze(1)  # => [n_mics, 1, wave_len_fixed]
+        mel = self.melspec(wave_3d)  # => [n_mics, n_mels, time]
         mel_db = self.to_db(mel)
         return mel_db
+
+    @staticmethod
+    def from_hyper(hyper: dict, device):
+        resample_cfg = hyper["Resample"]
+        timefix_cfg = hyper["TimeSequenceLengthFixer"]
+        mel_cfg = hyper["ToLogMelSpectrogram"]
+        mel_transform = RIRWaveformToMelTransform(
+            orig_freq=resample_cfg["orig_freq"],
+            new_freq=resample_cfg["new_freq"],
+            timefix_mode=timefix_cfg["mode"],
+            timefix_length=timefix_cfg["fixed_length"],
+            mel_sample_rate=mel_cfg["sample_rate"],
+            n_fft=mel_cfg["n_fft"],
+            hop_length=mel_cfg["hop_length"],
+            n_mels=mel_cfg["n_mels"],
+            device=device
+        )
+        return mel_transform
 
 
 ########################################
@@ -90,6 +123,7 @@ class LatentTransform(nn.Module):
     负责：raw wave -> mel -> AE encode -> latent
     和 RIRWaveformToMelTransform 配合使用
     """
+
     def __init__(self, mel_transform: nn.Module, autoencoder: nn.Module):
         """
         Args:
@@ -105,8 +139,8 @@ class LatentTransform(nn.Module):
         wave_3d: [n_mics, wave_len]
         return: latents => [n_mics, latent_dim]
         """
-        mel_db = self.mel_transform(wave_3d)        # => [n_mics, n_mels, time]
-        latents = self.autoencoder.encode(mel_db)   # => [n_mics, latent_dim]
+        mel_db = self.mel_transform(wave_3d)  # => [n_mics, n_mels, time]
+        latents = self.autoencoder.encode(mel_db)  # => [n_mics, latent_dim]
         return latents
 
 
@@ -117,6 +151,7 @@ class LatentTransformDataset(Dataset):
     """
     外部可以先做BC，或者把“DataTensorDataset”包在BC外，最后再进本Dataset。
     """
+
     def __init__(self, base_dataset: Dataset, latent_transform: nn.Module):
         """
         Args:
@@ -129,8 +164,8 @@ class LatentTransformDataset(Dataset):
 
     def __len__(self):
         return len(self.base_dataset)
-    
-    def change_base_dataset(self, dataset:Dataset):
+
+    def change_base_dataset(self, dataset: Dataset):
         self.base_dataset = dataset
         return self
 
@@ -149,52 +184,13 @@ def build_rir_latent_dataset(config: dict, data_pt: str, split: str, autoencoder
     data_pt里包含: {split: (data_tensor, label_tensor)}
     """
     # 1) 读取 raw_data
-    dataset_dict = torch.load(data_pt, map_location=device)
-    if split not in dataset_dict:
-        raise ValueError(f"split='{split}' not found in {data_pt}, available={list(dataset_dict.keys())}")
-
-    data_tensor, label_tensor = dataset_dict[split]
-
-    base_dataset = DataTensorDataset(data_tensor, label_tensor, device=device)
+    base_dataset = DataTensorDataset.from_datatensor_path(split, data_pt, device=device)
 
     # 2) 构造 RIRWaveformToMelTransform
-    resample_cfg = config["Resample"]
-    timefix_cfg  = config["TimeSequenceLengthFixer"]
-    mel_cfg      = config["ToLogMelSpectrogram.py"]
-    mel_transform = RIRWaveformToMelTransform(
-        orig_freq       = resample_cfg["orig_freq"],
-        new_freq        = resample_cfg["new_freq"],
-        timefix_mode    = timefix_cfg["mode"],
-        timefix_length  = timefix_cfg["fixed_length"],
-        mel_sample_rate = mel_cfg["sample_rate"],
-        n_fft           = mel_cfg["n_fft"],
-        hop_length      = mel_cfg["hop_length"],
-        n_mels          = mel_cfg["n_mels"],
-        device          = device
-    )
+    mel_transform = RIRWaveformToMelTransform.from_hyper(config, device)
 
     # 3) 构造预训练AutoEncoder
-    ae_cfg = config["AutoEncoder"]
-    autoencoder = AutoEncoder(
-        n_mel       = ae_cfg["n_mel"],
-        latent_size = ae_cfg["latent_size"],
-        num_heads   = ae_cfg["num_heads"]
-    ).to(device)
-
-    # 如果有init dummy
-    if "AutoEncoderInitDummyInput" in config:
-        shape = config["AutoEncoderInitDummyInput"]["shape"]
-        dummy_input = torch.randn(*shape, device=device)
-        autoencoder.encode(dummy_input)  # 激活lazy层
-
-    # 加载权重
-    ckpt = torch.load(autoencoder_ckpt, map_location=device)
-    if isinstance(ckpt, dict) and "model_state_dict" in ckpt:
-        state_dict = ckpt["model_state_dict"]
-    else:
-        state_dict = ckpt
-    autoencoder.load_state_dict(state_dict, strict=False)
-    autoencoder.eval()
+    autoencoder = AutoEncoder.from_structure_hyper_and_checkpoint(config["AutoEncoder"], autoencoder_ckpt, device)
 
     # 4) 构造 LatentTransform 并组合成Dataset
     latent_transform = LatentTransform(mel_transform, autoencoder)
@@ -215,7 +211,7 @@ if __name__ == "__main__":
         config=config_all,
         data_pt="5mic_esc50_rir_train.pt",
         split="train",
-        autoencoder_ckpt="AutoEncoder.pt",
+        autoencoder_ckpt="autoencoder_checkpoint/run_20250413_155634/checkpoints/epoch_300.pt",
         device="cuda"
     )
 

@@ -94,3 +94,23 @@ class AutoEncoder(nn.Module):
         if x_hat.shape[-1] != x.shape[-1]:
             x_hat = F.interpolate(x_hat, size=x.shape[-1], mode='linear', align_corners=False)
         return x_hat
+
+    @staticmethod
+    def from_structure_hyper_and_checkpoint(hyper: dict, checkpoint_path:str, device):
+        n_mel = hyper.get('n_mel')
+        latent_size = hyper.get('latent_size')
+        num_heads = hyper.get('num_heads')
+        model = AutoEncoder(n_mel=n_mel, latent_size=latent_size, num_heads=num_heads).to(device)
+        if "AutoEncoderInitDummyInput" in hyper:
+            shape = hyper["AutoEncoderInitDummyInput"]["shape"]
+            dummy_input = torch.randn(*shape, device=device)
+            with torch.no_grad():
+                model.encode(dummy_input)  # 激活lazy层
+
+        checkpoint = torch.load(checkpoint_path)
+        if isinstance(checkpoint, dict) and 'model_state_dict' in checkpoint:
+            model.load_state_dict(checkpoint['model_state_dict'])
+        else:
+            model.load_state_dict(checkpoint)
+        return model
+    

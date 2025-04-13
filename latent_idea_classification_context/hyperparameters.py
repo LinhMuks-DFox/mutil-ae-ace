@@ -2,14 +2,15 @@ from . import options
 
 # dataset config
 N_Classes = 50  # for esc-50
-DataSampleRate = 44100
+
 AudioDuration = 5  # s
 
-# Blinkies configuration
-NewSampleRate = 44100
+
+AudioSampleRate = 44100
 
 # Optimizer & Scheduler
 LearningRate = 0.1
+WeightDecay = 5e-5
 T_0, T_mult, eta_min = 10, 1, 1e-5
 SchedulerParameter = {
     "gamma": 0.1,
@@ -22,8 +23,6 @@ BatchSize = 100 if not options.DryRun else 100
 TrainSetTestMileStone = [
     i for i in range(Epochs) if i % 20 == 0 and i != 0
 ]
-
-# Data Preprocessing
 SoundTrack = "mix"
 
 # resnet

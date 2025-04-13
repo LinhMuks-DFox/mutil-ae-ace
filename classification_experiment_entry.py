@@ -5,15 +5,14 @@ import logging
 import os
 import sys
 import typing
-from datetime import datetime
 
 import torch
 import torch.amp
 
 from latent_idea_classification_context.Context import TrainContext as latent_idea_classification_context
 
-from src import Context
-from src import Trainer
+from src.ABCContext import Context
+from src.Trainer import Trainer
 
 
 def make_context(experiment_type: str) -> Context:
@@ -25,7 +24,7 @@ def make_context(experiment_type: str) -> Context:
 def get_hyperparameter_and_options_path(experiment_type: str) -> typing.Tuple[str, str]:
     return {
         "ltidl": ("./latent_idea_classification_context/hyperparameters.py",
-                     "./latent_idea_classification_context/options.py"),
+                  "./latent_idea_classification_context/options.py"),
     }[experiment_type]
 
 
@@ -70,13 +69,13 @@ def profiling_main():
 def main():
     args = parse_arguments()
     experiment_type = {
-        "ltidl":"ltidl"
+        "ltidl": "ltidl"
     }[args.experiment.lower()]
-    logging.info("Context making...")
+    print("Context making...")
     context: Context = make_context(experiment_type)
-    logging.info("Dump path creating...")
+    print("Dump path creating...")
     make_dump_path(context)
-    logging.info("Configuring logger...")
+    print("Configuring logger...")
     config_logger(context)
     train_app = make_trainer(context, get_hyperparameter_and_options_path(experiment_type),
                              only_keep_best_epoch=args.only_keep_best_epoch)
