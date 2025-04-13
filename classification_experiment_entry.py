@@ -9,43 +9,22 @@ import typing
 import torch
 import torch.amp
 
-from acdnet.Context import TrainContext as acdnet_context
-from embedding_blinkies_acoustic.Context import TrainContext as blinkies_acoustic_context
-from framework_debug.Context import TrainContext as dbg_context
-from no_room_blinky.Context import TrainContext as noom_blk_contenxt
-from resnet_acoustic.Context import TrainContext as resnet_context
-from soundpower_blinkies_acoustic.Context import TrainContext as soundpower_blinkies_acoustic_context
-from spectrogram_acoustic.Context import TrainContext as spectrogram_acoustic_context
+from latent_idea_classification_context.Context import TrainContext as latent_idea_classification_context
+
 from src import Context
 from src import Trainer
 
 
 def make_context(experiment_type: str) -> Context:
     return {
-        "blinkies": blinkies_acoustic_context,
-        "sound_power": soundpower_blinkies_acoustic_context,
-        "spectrogram": spectrogram_acoustic_context,
-        "acdnet": acdnet_context,
-        "resnet": resnet_context,
-        "dbg": dbg_context,
-        "no_room_blinky": noom_blk_contenxt
+        "ltidl": latent_idea_classification_context,
     }[experiment_type]()
 
 
 def get_hyperparameter_and_options_path(experiment_type: str) -> typing.Tuple[str, str]:
     return {
-        "blinkies": ("./embedding_blinkies_acoustic/hyperparameters.py",
-                     "./embedding_blinkies_acoustic/options.py"),
-        "sound_power": ("./soundpower_blinkies_acoustic/hyperparameters.py",
-                        "./soundpower_blinkies_acoustic/options.py"),
-        "spectrogram": ("./spectrogram_acoustic/hyperparameters.py",
-                        "./spectrogram_acoustic/options.py"),
-        "acdnet": ("./acdnet/hyperparameters.py",
-                   "./acdnet/options.py"),
-        "resnet": ("./resnet_acoustic/hyperparameters.py",
-                   "./resnet_acoustic/options.py"),
-        "dbg": ("./framework_debug/hyperparameter.py", "./framework_debug/options.py"),
-        "no_room_blinky": ("./no_room_blinky/hyperparameters.py", "./no_room_blinky/options.py")
+        "ltidl": ("./latent_idea_classification_context/hyperparameters.py",
+                     "./latent_idea_classification_context/options.py"),
     }[experiment_type]
 
 
@@ -89,13 +68,7 @@ def profiling_main():
 def main():
     args = parse_arguments()
     experiment_type = {
-        "acd": "acdnet",
-        "blk": "blinkies",
-        "sp": "sound_power",
-        "spcg": "spectrogram",
-        "rsnt": "resnet",
-        "dbg": "dbg",
-        "nrblk": "no_room_blinky"
+        "ltidl":"ltidl"
     }[args.experiment.lower()]
     print("Context making...")
     context: Context = make_context(experiment_type)
@@ -111,7 +84,7 @@ def main():
 def parse_arguments():
     parser = argparse.ArgumentParser(description="TrainApp configuration")
     parser.add_argument("-E", "--experiment", type=str, required=True,
-                        choices=["blk", "sp", "spcg", "acd", "rsnt", "dbg", "nrblk"],
+                        choices=["ltidl"],
                         help="Specify the experiment type.")
     parser.add_argument("-p", "--profiling", action="store_true", default=False, help="Run script with torch profile")
     parser.add_argument("-okbe", "--only-keep-best-epoch", action="store_true", default=False, help="只保留最好的epoch")

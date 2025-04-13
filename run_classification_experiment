@@ -20,7 +20,7 @@ def check_env():
         if env_name == "base":
             switch_to_torch_ml = input(
                 "You are currently in the 'base' environment. It is recommended to switch to 'torch_ml' environment.\n"
-                "Please run `conda activate torch_ml` and re-run the script, or press 'Enter' to continue in the base "
+                "Please run_classification_experiment `conda activate torch_ml` and re-run_classification_experiment the script, or press 'Enter' to continue in the base "
                 "environment:"
             )
             if switch_to_torch_ml.lower() not in ['y', 'yes', '']:
@@ -81,7 +81,7 @@ def main():
         # 使用 nohup 启动 Poetry 环境中的脚本，且子进程与父进程分离
         with open(log_filename, "w") as log_file:
             subprocess.Popen(
-                ["nohup", "poetry", "run"] + command[1:], stdout=log_file, stderr=log_file, start_new_session=True
+                ["nohup", "poetry", "run_classification_experiment"] + command[1:], stdout=log_file, stderr=log_file, start_new_session=True
             )
 
     # 如果启用了监视选项，则清屏并启动监视
