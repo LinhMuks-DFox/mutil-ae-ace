@@ -46,6 +46,6 @@ class DataPreprocessor(torch.nn.Module):
     @torch.no_grad()
     def forward(self, x: torch.Tensor):
         ret = self.to_latent(x)
-        # ret = self.blinky_data_normalize(ret)
+        ret = self.blinky_data_normalize(ret)
         ret = self.adjust(ret)
         return ret
