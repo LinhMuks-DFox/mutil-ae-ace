@@ -6,7 +6,7 @@ import yaml
 CacheSize = 2000
 Device = "cuda" if torch.cuda.is_available() else "mps" if torch.mps.is_available() else "cpu"
 TrainID = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-SaveDirectory = f"./trained/{TrainID}-real"
+SaveDirectory = f"./trained/{TrainID}-spectro-ideal"
 
 Platform: str = platform.platform()
 DryRun: bool = False
