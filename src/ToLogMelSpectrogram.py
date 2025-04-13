@@ -43,17 +43,15 @@ class ToLogMelSpectrogram(nn.Module):
 
 
 if __name__ == "__main__":
-    import torchaudio
     import matplotlib.pyplot as plt
 
     # Load an example waveform
-    import Dataset
     with open("other_configs.yml", "r") as f:
         cfg = yaml.safe_load(f)
-    dataset, none = Dataset.AudioSet.from_yaml(cfg, True, False)
+    dataset, none = Dataset.AudiosetForMakingAutoEncoder.from_yaml(cfg, True, False)
     print(dataset[0])
     
-    with open("hyperpara.yml", "r") as f:
+    with open("auto_encoder_hyperpara.yml", "r") as f:
         hyper = yaml.safe_load(f)
     transformer = ToLogMelSpectrogram.from_yaml(
         hyper

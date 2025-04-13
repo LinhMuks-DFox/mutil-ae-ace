@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import Dataset
 import torchaudio.transforms as T
-from AutoEncoder import AutoEncoder
+from src.AutoEncoder import AutoEncoder
 
 ########################################
 # 1) 仅负责“读取 data_tensor”的简单 Dataset
@@ -38,7 +38,7 @@ class DataTensorDataset(Dataset):
 class RIRWaveformToMelTransform(nn.Module):
     """
     假设你的超参中有:
-    config["Resample"], config["TimeSequenceLengthFixer"], config["ToLogMelSpectrogram"]
+    config["Resample"], config["TimeSequenceLengthFixer"], config["ToLogMelSpectrogram.py"]
     这里就和之前的 WaveformToMelTransform 类似。
     """
     def __init__(
@@ -149,7 +149,6 @@ def build_rir_latent_dataset(config: dict, data_pt: str, split: str, autoencoder
     data_pt里包含: {split: (data_tensor, label_tensor)}
     """
     # 1) 读取 raw_data
-    from torch.utils.data import Dataset
     dataset_dict = torch.load(data_pt, map_location=device)
     if split not in dataset_dict:
         raise ValueError(f"split='{split}' not found in {data_pt}, available={list(dataset_dict.keys())}")
@@ -161,7 +160,7 @@ def build_rir_latent_dataset(config: dict, data_pt: str, split: str, autoencoder
     # 2) 构造 RIRWaveformToMelTransform
     resample_cfg = config["Resample"]
     timefix_cfg  = config["TimeSequenceLengthFixer"]
-    mel_cfg      = config["ToLogMelSpectrogram"]
+    mel_cfg      = config["ToLogMelSpectrogram.py"]
     mel_transform = RIRWaveformToMelTransform(
         orig_freq       = resample_cfg["orig_freq"],
         new_freq        = resample_cfg["new_freq"],
@@ -208,7 +207,7 @@ if __name__ == "__main__":
     from torch.utils.data import DataLoader
 
     # 加载超参数
-    with open("configs/hyperpara.yml", "r") as f:
+    with open("../configs/auto_encoder_hyperpara.yml", "r") as f:
         config_all = yaml.safe_load(f)
 
     # 构建 dataset

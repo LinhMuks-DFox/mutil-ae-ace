@@ -3,8 +3,8 @@ from torch.utils.data import DataLoader
 import os
 
 # 假设你这两个类和你的工程目录结构如下，如果目录不同请自行调整 import 路径
-from ESC50FixedDataset import ESC50FixedDataset
-from MultiFixedFilterRoomSim import MultiFixedFilterRoomSim
+from src.ESC50FixedDataset import ESC50FixedDataset
+from src.MultiFixedFilterRoomSim import MultiFixedFilterRoomSim
 
 def generate_rir_convolved_esc50(
     esc50_fixed_pt,    # 指向原始 esc50_fixed_dataset.pt

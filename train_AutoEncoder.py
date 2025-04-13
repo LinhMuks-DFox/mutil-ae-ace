@@ -17,11 +17,11 @@ import tqdm
 import torchinfo
 import torchaudio.transforms as T
 from lib.AudioSet.transform import TimeSequenceLengthFixer, SoundTrackSelector
-import lib.MuxkitDeepLearningTools.dataset_tools.CachableDataset as mk_cachedata
+import lib.MuxkitTools.dataset_tools.CachableDataset as mk_cachedata
 
-import AutoEncoder
-import Dataset
-import DataTransform
+import src.AutoEncoder
+import src.AudioSetForMakingAutoEncoder
+import src.ToLogMelSpectrogram
 
 class ToDevice(nn.Module):
     """将输入Tensor迁移到指定设备的简单Module封装。"""
@@ -34,10 +34,10 @@ class ToDevice(nn.Module):
 
 class AutoEncoderTrainer:
     def __init__(self, 
-                 hyperpara_path="hyperpara.yml",
+                 hyperpara_path="auto_encoder_hyperpara.yml",
                  email_config_path="email_config.yml",
                  other_configs_path="other_configs.yml",
-                 checkpoint_dir="./checkpoints"):
+                 checkpoint_dir="./auto_encoder_checkpoints"):
 
         # 读取超参数
         with open(hyperpara_path, "r") as f:
@@ -59,11 +59,11 @@ class AutoEncoderTrainer:
             ToDevice(self.device),
             T.Resample(**self.hyper_parameter["Resample"]),
             TimeSequenceLengthFixer(**self.hyper_parameter["TimeSequenceLengthFixer"]),
-            DataTransform.ToLogMelSpectrogram(**self.hyper_parameter["ToLogMelSpectrogram"])
+            ToLogMelSpectrogram.ToLogMelSpectrogram(**self.hyper_parameter["ToLogMelSpectrogram.py"])
         ).to(self.device)
 
         # 数据集加载
-        trainset, evalset = Dataset.AudioSet.from_yaml(other_configs)
+        trainset, evalset = Dataset.AudiosetForMakingAutoEncoder.from_yaml(other_configs)
         trainset.transform = self.data_preprocess
         evalset.transform = self.data_preprocess
 
@@ -307,8 +307,8 @@ class AutoEncoderTrainer:
 
 if __name__ == "__main__":
     trainer = AutoEncoderTrainer(
-        hyperpara_path="./configs/hyperpara.yml",
-        email_config_path="./configs/email_config.yml",
-        other_configs_path="./configs/dataset_info.yml"
+        hyperpara_path="configs/auto_encoder_hyperpara.yml",
+        email_config_path="configs/email_config.yml",
+        other_configs_path="configs/dataset_info.yml"
     )
     trainer.run()

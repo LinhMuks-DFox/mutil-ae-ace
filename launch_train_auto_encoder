@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # 该脚本用于在后台启动 AutoEncoderTrainer 训练并输出日志到一个带时间戳的文件。
-# 使用方法：给 run.sh 添加可执行权限后，直接在终端运行 ./run.sh
+# 使用方法：给 train_auto_encoder 添加可执行权限后，直接在终端运行 ./train_auto_encoder
 
 # 若需要使用conda环境，请在此处启用：
 # source ~/anaconda3/etc/profile.d/conda.sh
@@ -11,7 +11,7 @@
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 LOGFILE="autoencoder_train_${TIMESTAMP}.log"
 rm *.log
-# 后台运行 make_autoencoder.py，将标准输出和错误输出都重定向到日志文件
+# 后台运行 train_AutoEncoder.py，将标准输出和错误输出都重定向到日志文件
 nohup python -u make_autoencoder.py > "$LOGFILE" 2>&1 &
 
 echo "AutoEncoder training started."

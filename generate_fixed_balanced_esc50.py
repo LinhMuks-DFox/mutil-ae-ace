@@ -26,7 +26,7 @@ def main():
 
     # 读取数据集配置信息
     print("Loading dataset configuration from 'dataset_info.yml' ...")
-    with open("dataset_info.yml", "r") as f:
+    with open("configs/dataset_info.yml", "r") as f:
         dataset_info = yaml.safe_load(f)
 
     # 获取 ESC50 数据存放路径
@@ -52,7 +52,7 @@ def main():
     val_data, val_labels = dataset_to_tensor(val_set, num_classes)
 
     # 打包并保存
-    output_path = "esc50_fixed_dataset.pt"
+    output_path = "fixed_rir_esc50/esc50_fixed_dataset.pt"
     print(f"Saving fixed dataset to {output_path} ...")
     fixed_dataset = {
         "train": (train_data, train_labels),

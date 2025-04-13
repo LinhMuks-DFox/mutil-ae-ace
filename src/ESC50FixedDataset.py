@@ -34,7 +34,7 @@ if __name__ == "__main__":
     from torch.utils.data import DataLoader
 
     # 假设之前保存好的固定 ESC50 数据集文件为 "esc50_fixed_dataset.pt"
-    dataset_path = "esc50_fixed_dataset.pt"
+    dataset_path = "../fixed_rir_esc50/esc50_fixed_dataset.pt"
 
     # 以 train 分割为例创建数据集实例
     train_dataset = ESC50FixedDataset(dataset_path, split="train")
