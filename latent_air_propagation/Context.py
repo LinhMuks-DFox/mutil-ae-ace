@@ -29,7 +29,9 @@ class TrainContext(Context):  # 继承自 ABCContext
          .set_dump_path(opt.SaveDirectory)
          .set_n_classes(hyp.N_Classes)
          .set_compile_model(opt.CompileModel)
-         .set_context_identifier(f"resnet_{opt.TrainID}{'_dryrun' if opt.DryRun else ''}"))
+         .set_context_identifier(f"resnet_{opt.TrainID}{'_dryrun' if opt.DryRun else ''}")
+        .set_visualaization_loss_clamp(hyp.MaxLossOfVisualization)
+         .set_warm_up(hyp.WarmpUp))
         self.full_initialization()
         if serial is not None:
             self.unserialize(serial)

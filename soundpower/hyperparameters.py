@@ -6,7 +6,8 @@ N_Classes = 50  # for esc-50
 AudioDuration = 5  # s
 
 AudioSampleRate = 44100
-
+WarmpUp = 10
+MaxLossOfVisualization = 10 
 # Optimizer & Scheduler
 LearningRate = 1e-2
 WeightDecay = 5e-5

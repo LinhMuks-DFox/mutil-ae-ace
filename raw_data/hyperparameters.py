@@ -4,7 +4,8 @@ from . import options
 N_Classes = 50  # for esc-50
 N_MIC = 5
 AudioDuration = 5  # s
-
+WarmpUp = 10
+MaxLossOfVisualization = 10 
 AudioSampleRate = 44100
 
 # Optimizer & Scheduler
