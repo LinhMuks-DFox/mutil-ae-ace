@@ -31,7 +31,7 @@ def get_hyperparameter_and_options_path(experiment_type: str) -> typing.Tuple[st
 def config_logger(context: Context):
     log_file_path = os.path.join(context.dump_path, "train.log")
     logging.basicConfig(
-        format='%(asctime)s - %(levelname)s - %(message)s',
+        format='%(asctime)s - %(message)s:\n',
         level=logging.INFO,
         handlers=[
             logging.FileHandler(log_file_path, mode="w"),

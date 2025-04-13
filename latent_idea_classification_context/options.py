@@ -9,9 +9,9 @@ TrainID = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 SaveDirectory = f"./trained/{TrainID}-resnet"
 
 Platform: str = platform.platform()
-DryRun: bool = True
+DryRun: bool = False
 ModelDebugging: bool = True
-CompileModel = False
+CompileModel = True
 
 
 BASE_DIR = pathlib.Path(__file__).resolve().parent.parent  # 假设你在 src/ 目录下
