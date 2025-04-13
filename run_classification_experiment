@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 
 # 设置默认入口文件
-ENTRY = "train.py"
+ENTRY = "classification_experiment_entry.py"
 
 
 def check_env():
@@ -82,7 +82,7 @@ def main():
         # 使用 nohup 启动 Poetry 环境中的脚本，且子进程与父进程分离
         with open(log_filename, "w") as log_file:
             subprocess.Popen(
-                ["nohup", "poetry", "classification_experiment_entry"] + command[1:], stdout=log_file, stderr=log_file, start_new_session=True
+                ["nohup", "poetry", "run"] + command[1:], stdout=log_file, stderr=log_file, start_new_session=True
             )
 
     # 如果启用了监视选项，则清屏并启动监视

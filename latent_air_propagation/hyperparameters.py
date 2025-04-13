@@ -5,7 +5,6 @@ N_Classes = 50  # for esc-50
 
 AudioDuration = 5  # s
 
-
 AudioSampleRate = 44100
 
 # Optimizer & Scheduler
@@ -27,3 +26,11 @@ SoundTrack = "mix"
 
 # resnet
 ResNet = 18
+
+# Light Propagation
+Distance = 1
+bias = 0.1
+std = 0.05
+# Camera Response
+SignalSourceSampleRate = 15
+CameraFrameRate = 30,
