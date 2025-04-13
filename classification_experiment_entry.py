@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 import typing
+import subprocess
 
 import torch
 import torch.amp
@@ -80,6 +81,13 @@ def main():
     train_app = make_trainer(context, get_hyperparameter_and_options_path(experiment_type),
                              only_keep_best_epoch=args.only_keep_best_epoch)
     train_app.main()
+
+    # 实验完成后发送通知邮件
+    subprocess.run([
+        "python", "email_sender.py",
+        "--subject", "Experiment Notification ✅",
+        "--body", f"Your experiment '{args.experiment}' has finished successfully!"
+    ])
 
 
 def parse_arguments():

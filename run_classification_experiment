@@ -48,8 +48,9 @@ def get_log_filename(experiment_type: str) -> str:
 
 def main():
     parser = argparse.ArgumentParser(description="启动实验脚本")
-    parser.add_argument("-E", "--experiment", type=str, default="blk",
-                        help="Specify the experiment type (e.g., acd, blk, sp, spcg, rsnt, dbg, nrblk)")
+    parser.add_argument("-E", "--experiment", type=str, required=True,
+                        choices=["ltidl"],
+                        help="Specify the experiment type.")
     parser.add_argument("-m", "--monitor", action="store_true",
                         help="Clear screen and monitor the log file with 'tail -f'")
     parser.add_argument("-pf", "--profiling", action="store_true", default=False, help="Run train with profiling"),
@@ -81,7 +82,7 @@ def main():
         # 使用 nohup 启动 Poetry 环境中的脚本，且子进程与父进程分离
         with open(log_filename, "w") as log_file:
             subprocess.Popen(
-                ["nohup", "poetry", "run_classification_experiment"] + command[1:], stdout=log_file, stderr=log_file, start_new_session=True
+                ["nohup", "poetry", "classification_experiment_entry"] + command[1:], stdout=log_file, stderr=log_file, start_new_session=True
             )
 
     # 如果启用了监视选项，则清屏并启动监视
