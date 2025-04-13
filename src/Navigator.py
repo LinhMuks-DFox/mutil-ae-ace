@@ -30,8 +30,11 @@ class TrainingProcessNavigator:
         return self.ctx.summary()
 
     def plot_losses(self):
-        train_loss = self.ctx.train_loss.detach().clone().cpu().numpy()
-        validate_loss = self.ctx.validate_loss.detach().clone().cpu().numpy()
+        train_loss = self.ctx.train_loss.detach().clone()
+        validate_loss = self.ctx.validate_loss.detach().clone()
+        max_clip = self.ctx.visualaization_loss_clamp or 10.0
+        train_loss = train_loss.clamp(max=max_clip).cpu().numpy()
+        validate_loss = validate_loss.clamp(max=max_clip).cpu().numpy()
         fig, ax = plt.subplots()
         ax.set_title(f"{self.ctx.current_epoch} Loss")
         ax.set_xlabel("Epoch")
