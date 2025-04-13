@@ -85,7 +85,6 @@ class DataPreprocessor(torch.nn.Module):
         ret = self.light_propagate(ret)
         ret = self.camera(ret)
         ret = self.adjust(ret)
-        print(ret.shape)
 
         return ret
 
