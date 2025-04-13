@@ -8,8 +8,11 @@ AudioDuration = 5  # s
 AudioSampleRate = 44100
 
 # Optimizer & Scheduler
-LearningRate = 0.1
+LearningRate = 1e-2
 WeightDecay = 5e-5
+ReduceLROnPlateauMode, ReduceLROnPlateauFactor, ReduceLROnPlateauPatience, ReduceLROnPlateauMinLR = 'min', 0.5, 10, 1e-7
+ReduceLROnPlateauMetricsName = "validate_loss"
+
 T_0, T_mult, eta_min = 10, 1, 1e-5
 SchedulerParameter = {
     "gamma": 0.1,

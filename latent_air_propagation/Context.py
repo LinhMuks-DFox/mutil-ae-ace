@@ -50,11 +50,13 @@ class TrainContext(Context):  # 继承自 ABCContext
         )
 
     def initialize_scheduler(self):
-        # 使用 CosineAnnealingWarmRestarts 作为调度器
-        self.scheduler: optimize.lr_scheduler.LRScheduler = optimize.lr_scheduler.CosineAnnealingWarmRestarts(
-            self.optimizer, hyp.T_0, hyp.T_mult, hyp.eta_min
+        self.scheduler: optimize.lr_scheduler.LRScheduler = WarpedReduceLROnPlateau(
+            self.optimizer, mode=hyp.ReduceLROnPlateauMode,
+            factor=hyp.ReduceLROnPlateauFactor,
+            patience=hyp.ReduceLROnPlateauPatience,
+            metrics_name=hyp.ReduceLROnPlateauMetricsName,
+            min_lr=hyp.ReduceLROnPlateauMinLR
         )
-
     def initialize_datasets(self):
         train_set = DataTensorDataset.from_datatensor_path(
             split="train",
