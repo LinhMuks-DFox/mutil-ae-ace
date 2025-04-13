@@ -9,14 +9,14 @@ AudioSampleRate = 44100
 WarmpUp = 10
 MaxLossOfVisualization = 10 
 # Optimizer & Scheduler
-LearningRate = 1e-2
+LearningRate = 0.001
 WeightDecay = 5e-5
 ReduceLROnPlateauMode, ReduceLROnPlateauFactor, ReduceLROnPlateauPatience, ReduceLROnPlateauMinLR = 'min', 0.5, 10, 1e-7
 ReduceLROnPlateauMetricsName = "validate_loss"
 
 T_0, T_mult, eta_min = 10, 1, 1e-5
 SchedulerParameter = {
-    "gamma": 0.1,
+    "gamma": 0.001,
     "milestones": [40, 80, ]
 }
 

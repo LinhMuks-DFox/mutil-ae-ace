@@ -9,7 +9,7 @@ MaxLossOfVisualization = 10
 AudioSampleRate = 44100
 
 # Optimizer & Scheduler
-LearningRate = 0.1
+LearningRate = 0.001
 WeightDecay = 5e-5
 ReduceLROnPlateauMode, ReduceLROnPlateauFactor, ReduceLROnPlateauPatience, ReduceLROnPlateauMinLR = 'min', 0.5, 10, 1e-7
 ReduceLROnPlateauMetricsName = "validate_loss"
