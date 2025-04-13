@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 import typing
+from datetime import datetime
 
 import torch
 import torch.amp
@@ -29,11 +30,12 @@ def get_hyperparameter_and_options_path(experiment_type: str) -> typing.Tuple[st
 
 
 def config_logger(context: Context):
+    log_file_path = os.path.join(context.dump_path, "train.log")
     logging.basicConfig(
-        format='%(asctime)s: \n%(message)s',
+        format='%(asctime)s - %(levelname)s - %(message)s',
         level=logging.INFO,
         handlers=[
-            logging.FileHandler(os.path.join(context.dump_path, "log.log"), mode="w"),
+            logging.FileHandler(log_file_path, mode="w"),
             logging.StreamHandler(sys.stdout)
         ]
     )
@@ -54,7 +56,7 @@ def make_dump_path(context):
 
 def profiling_main():
     from torch.profiler import profile, ProfilerActivity
-    print("Run Train scrip in profiling-mode")
+    logging.info("Run Train script in profiling-mode")
     with profile(
             activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA],
             record_shapes=True,
@@ -70,11 +72,11 @@ def main():
     experiment_type = {
         "ltidl":"ltidl"
     }[args.experiment.lower()]
-    print("Context making...")
+    logging.info("Context making...")
     context: Context = make_context(experiment_type)
-    print("Dump path creating...")
+    logging.info("Dump path creating...")
     make_dump_path(context)
-    print("Configuring logger...")
+    logging.info("Configuring logger...")
     config_logger(context)
     train_app = make_trainer(context, get_hyperparameter_and_options_path(experiment_type),
                              only_keep_best_epoch=args.only_keep_best_epoch)

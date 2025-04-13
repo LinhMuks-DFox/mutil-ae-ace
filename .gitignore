@@ -189,3 +189,4 @@ dataset_info.yml
 *.pt
 
 .idea/
+autoencoder_checkpoint/

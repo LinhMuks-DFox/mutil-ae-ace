@@ -9,6 +9,7 @@ import torch.nn.init as init
 import torch.optim as optim
 import numpy as np
 import matplotlib.pyplot as plt
+import logging
 
 from datetime import datetime
 from email.message import EmailMessage
@@ -19,9 +20,10 @@ import torchaudio.transforms as T
 from lib.AudioSet.transform import TimeSequenceLengthFixer, SoundTrackSelector
 import lib.MuxkitTools.dataset_tools.CachableDataset as mk_cachedata
 
-import src.AutoEncoder
-import src.AudioSetForMakingAutoEncoder
-import src.ToLogMelSpectrogram
+import src.AutoEncoder as AutoEncoder
+import src.AudioSetForMakingAutoEncoder as AudioSetForMakingAutoEncoder
+import src.ToLogMelSpectrogram as ToLogMelSpectrogram
+import src.AudioSetForMakingAutoEncoder as Dataset
 
 class ToDevice(nn.Module):
     """将输入Tensor迁移到指定设备的简单Module封装。"""
@@ -39,6 +41,11 @@ class AutoEncoderTrainer:
                  other_configs_path="other_configs.yml",
                  checkpoint_dir="./auto_encoder_checkpoints"):
 
+        # 创建用于本轮实验的专属目录
+        self.run_dir = f"autoencoder_checkpoint/run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        os.makedirs(self.run_dir, exist_ok=True)
+        os.makedirs(os.path.join(self.run_dir, "checkpoints"), exist_ok=True)
+
         # 读取超参数
         with open(hyperpara_path, "r") as f:
             self.hyper_parameter = yaml.safe_load(f)
@@ -47,8 +54,14 @@ class AutoEncoderTrainer:
         with open(other_configs_path, "r") as f:
             other_configs = yaml.safe_load(f)
 
-        self.checkpoint_dir = checkpoint_dir
-        os.makedirs(self.checkpoint_dir, exist_ok=True)
+        # 保存超参数配置
+        with open(os.path.join(self.run_dir, "hyperparameters.yml"), "w") as f:
+            yaml.dump(self.hyper_parameter, f)
+
+        # 设置日志记录
+        logging.basicConfig(filename=os.path.join(self.run_dir, 'train.log'), 
+                            level=logging.INFO, 
+                            format='%(asctime)s - %(levelname)s - %(message)s')
 
         # 设备
         self.device = self.hyper_parameter["TrainProcessControl"]["device"]
@@ -59,7 +72,7 @@ class AutoEncoderTrainer:
             ToDevice(self.device),
             T.Resample(**self.hyper_parameter["Resample"]),
             TimeSequenceLengthFixer(**self.hyper_parameter["TimeSequenceLengthFixer"]),
-            ToLogMelSpectrogram.ToLogMelSpectrogram(**self.hyper_parameter["ToLogMelSpectrogram.py"])
+            ToLogMelSpectrogram.ToLogMelSpectrogram(**self.hyper_parameter["ToLogMelSpectrogram"])
         ).to(self.device)
 
         # 数据集加载
@@ -81,8 +94,11 @@ class AutoEncoderTrainer:
         self.model = AutoEncoder.AutoEncoder(**self.hyper_parameter["AutoEncoder"]).to(self.device)
         with torch.no_grad():
             data0, _ = self.trainset[0]
-            print("Feeded Data shape: ", data0.shape)
-            torchinfo.summary(self.model, input_data=data0.unsqueeze(0))
+            logging.info("Feeded Data shape: %s", data0.shape)
+            model_summary = torchinfo.summary(self.model, input_data=data0.unsqueeze(0))
+            for line in str(model_summary).split('\n'):
+                logging.info(line)
+
         # 优化器和调度器
         self.optimizer = optim.Adam(
             self.model.parameters(),
@@ -154,15 +170,10 @@ class AutoEncoderTrainer:
 
     def save_checkpoint(self, epoch=None):
         """保存模型checkpoint，同时保存训练过程中的loss、验证loss和学习率数据到独立子文件夹中。"""
-        os.makedirs(self.checkpoint_dir, exist_ok=True)
-        now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        # 创建一个基于当前时间的子文件夹
-        subfolder = os.path.join(self.checkpoint_dir, f"checkpoint_{now}")
-        os.makedirs(subfolder, exist_ok=True)
-        
+        os.makedirs(os.path.join(self.run_dir, "checkpoints"), exist_ok=True)
         filename = f"epoch_{epoch}" if epoch is not None else "final"
         filename += ".pt"
-        save_path = os.path.join(subfolder, filename)
+        save_path = os.path.join(self.run_dir, "checkpoints", filename)
         
         torch.save({
             'epoch': epoch,
@@ -173,7 +184,7 @@ class AutoEncoderTrainer:
             'lr_list': self.lr_list,
         }, save_path)
         
-        print(f"[✓] Checkpoint saved: {save_path}")
+        logging.info("[✓] Checkpoint saved: %s", save_path)
 
     def plot_losses(self, save_path="loss_curve.png"):
         """绘制训练和验证Loss曲线。"""
@@ -187,9 +198,9 @@ class AutoEncoderTrainer:
         plt.title("Training and Validation Loss")
         plt.legend()
         plt.grid(True)
-        plt.savefig(save_path)
+        plt.savefig(os.path.join(self.run_dir, save_path))
         plt.close()
-        print(f"[✓] Loss curve saved to {save_path}")
+        logging.info("[✓] Loss curve saved to %s", os.path.join(self.run_dir, save_path))
 
     def plot_learning_rate(self, save_path="lr_curve.png"):
         """绘制学习率变化曲线。"""
@@ -200,9 +211,9 @@ class AutoEncoderTrainer:
         plt.title("Learning Rate Schedule")
         plt.legend()
         plt.grid(True)
-        plt.savefig(save_path)
+        plt.savefig(os.path.join(self.run_dir, save_path))
         plt.close()
-        print(f"[✓] Learning rate curve saved to {save_path}")
+        logging.info("[✓] Learning rate curve saved to %s", os.path.join(self.run_dir, save_path))
 
     @torch.no_grad()
     def show_reconstruction(self, dataset, save_path="reconstruction.png"):
@@ -224,9 +235,9 @@ class AutoEncoderTrainer:
         axs[1].set_title("Reconstructed Log-Mel")
 
         plt.tight_layout()
-        plt.savefig(save_path)
+        plt.savefig(os.path.join(self.run_dir, save_path))
         plt.close()
-        print(f"[✓] Reconstruction plot saved to {save_path}")
+        logging.info("[✓] Reconstruction plot saved to %s", os.path.join(self.run_dir, save_path))
 
     def send_mail(self, subject, body):
         """发送简单的通知邮件。"""
@@ -241,9 +252,9 @@ class AutoEncoderTrainer:
                 smtp.starttls()
                 smtp.login(self.email_config["email"]["from"], self.email_config["email"]["password"])
                 smtp.send_message(msg)
-            print("[✓] Notification email sent.")
+            logging.info("[✓] Notification email sent.")
         except Exception as e:
-            print(f"[!] Failed to send notification email: {e}")
+            logging.warning("[!] Failed to send notification email: %s", e)
 
     def run(self):
         """执行整个训练流程。包括训练、验证、可视化和邮件通知等。"""
@@ -253,18 +264,18 @@ class AutoEncoderTrainer:
                 current_lr = self.optimizer.param_groups[0]['lr']
                 self.lr_list.append(current_lr)
 
-                print(f"\nEpoch {epoch + 1}/{self.epochs}, LR={current_lr}")
+                logging.info("\nEpoch %d/%d, LR=%.6f", epoch + 1, self.epochs, current_lr)
 
                 # 训练
                 train_loss = self.one_epoch_train()
                 self.train_losses.append(train_loss)
-                print(f"Train Loss: {train_loss:.6f}")
+                logging.info("Train Loss: %.6f", train_loss)
 
                 # 验证
                 if (epoch + 1) % self.val_interval == 0:
                     val_loss = self.validate()
                     self.validate_losses.append(val_loss)
-                    print(f"Validation Loss: {val_loss:.6f}")
+                    logging.info("Validation Loss: %.6f", val_loss)
                     self.scheduler.step(val_loss)
 
                 # 保存checkpoint
@@ -291,15 +302,15 @@ class AutoEncoderTrainer:
                 self.send_mail("AutoEncoder Training Finished", body_msg)
 
         except KeyboardInterrupt:
-            print("\n[!] 收到 KeyboardInterrupt，正在保存checkpoint和曲线后退出...")
+            logging.warning("\n[!] 收到 KeyboardInterrupt，正在保存checkpoint和曲线后退出...")
             self.save_checkpoint(epoch="KeyboardInterrupt")
             self.plot_losses("loss_curve_keyboard_interrupt.png")
             self.plot_learning_rate("lr_curve_keyboard_interrupt.png")
             sys.exit(1)
 
         except Exception as e:
-            print("[!] 发生异常：", e)
-            print("[!] 正在保存checkpoint和曲线，以便后续排查...")
+            logging.warning("[!] 发生异常：%s", e)
+            logging.warning("[!] 正在保存checkpoint和曲线，以便后续排查...")
             self.save_checkpoint(epoch="Exception")
             self.plot_losses("loss_curve_exception.png")
             self.plot_learning_rate("lr_curve_exception.png")
