@@ -8,5 +8,5 @@ class SoftmaxLogKLDivLoss(torch.nn.Module):
         self.kl_div = torch.nn.KLDivLoss(reduction="batchmean")
 
     def forward(self, predicted, target):
-        predicted = torch.nn.functional.softmax(predicted, dim=1).log()
-        return self.kl_div(predicted, target)
+        log_pred = torch.nn.functional.log_softmax(predicted, dim=1)
+        return self.kl_div(log_pred, target)
