@@ -20,6 +20,7 @@ epilog = """\
   python generate_fixed_balanced_esc50.py
 """
 
+
 def dataset_to_tensor(subset, num_classes):
     data_list = []
     label_list = []
@@ -37,13 +38,15 @@ def dataset_to_tensor(subset, num_classes):
     label_tensor = torch.stack(label_list, dim=0)
     return data_tensor, label_tensor
 
+
 def main():
     parser = argparse.ArgumentParser(
         description="Generate ESC50 fixed-format dataset with label-balanced split.",
         epilog=epilog,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    parser.add_argument('--out_path', type=str, default="fixed_rir_esc50/esc50_fixed_dataset.pt", help='Output path for the fixed dataset')
+    parser.add_argument('--out_path', type=str, default="fixed_rir_esc50/esc50_fixed_dataset.pt",
+                        help='Output path for the fixed dataset')
     args = parser.parse_args()
 
     print("=== Starting process... ===")
@@ -85,6 +88,7 @@ def main():
     }
     torch.save(fixed_dataset, output_path)
     print("=== Done! Fixed dataset saved. ===")
+
 
 if __name__ == "__main__":
     main()

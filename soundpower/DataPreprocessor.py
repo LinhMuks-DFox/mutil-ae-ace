@@ -72,8 +72,8 @@ class DataPreprocessor(torch.nn.Module):
 
     def __init__(self):
         super().__init__()
-        self.time_fix = TimeSequenceLengthFixer(hyp.AudioDuration, hyp.AudioSampleRate, "s")
-        self.down_sample = torchaudio.transforms.Resample(orig_freq=hyp.AudioSampleRate, new_freq=hyp.RsampelTo)
+        self.time_fix = TimeSequenceLengthFixer(hyp.AudioDuration, hyp.ResampleTo, "s")
+        self.down_sample = torchaudio.transforms.Resample(orig_freq=hyp.AudioSampleRate, new_freq=hyp.ResampleTo)
         self.sound_power = ToSoundPower()
         self.light_propagate = LightPropagation(hyp.Distance, hyp.bias, hyp.std)
         self.camera = CameraResponse(hyp.SignalSourceSampleRate, hyp.CameraFrameRate)
@@ -81,10 +81,12 @@ class DataPreprocessor(torch.nn.Module):
 
     @torch.no_grad()
     def forward(self, x: torch.Tensor):
-        ret = self.time_fix(x)
+        ret = self.down_sample(x)
+        ret = self.time_fix(ret)
         ret = self.sound_power(ret)
         ret = self.light_propagate(ret)
         ret = self.camera(ret)
+        # print(ret.shape)
         ret = self.adjust(ret)
 
         return ret
