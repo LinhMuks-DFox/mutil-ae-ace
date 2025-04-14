@@ -48,9 +48,10 @@ def get_log_filename(experiment_type: str) -> str:
 
 def main():
     parser = argparse.ArgumentParser(description="启动实验脚本")
-    parser.add_argument("-E", "--experiment", type=str, required=True,
+    parser.add_argument("-E", "--experiment", type=str, required=False,
                         choices=["ltidl", "speidl", "ltari", "sdp"],
                         help="Specify the experiment type.")
+    parser.add_argument("--all", action="store_true", help="Run all experiments one by one in sequence.")
     parser.add_argument("-m", "--monitor", action="store_true",
                         help="Clear screen and monitor the log file with 'tail -f'")
     parser.add_argument("-pf", "--profiling", action="store_true", default=False, help="Run train with profiling"),
@@ -58,39 +59,46 @@ def main():
 
     args = parser.parse_args()
 
-    # 生成日志文件名
-    log_filename = get_log_filename(args.experiment)
-
     # 检查环境
     env_type = check_env()
 
-    # 启动实验
-    print(f"Starting experiment '{args.experiment}'logging to {log_filename}")
-    command = ["nohup", "python", "-u", ENTRY, "-E", args.experiment]
-    if args.profiling:
-        command.append("--profiling")
-    if args.only_keep_best_epoch:
-        command.append("-okbe")
+    # 确定实验列表
+    experiment_list = []
+    if args.all:
+        experiment_list = ["ltidl", "speidl", "ltari", "sdp"]
+    elif args.experiment:
+        experiment_list = [args.experiment]
+    else:
+        print("Please specify an experiment with -E or use --all to run all.")
+        sys.exit(1)
 
-    if env_type == "conda":
-        # 使用 nohup 启动 Conda 环境中的脚本，且子进程与父进程分离
+    log_filenames = []
+    for experiment in experiment_list:
+        log_filename = get_log_filename(experiment)
+        print(f"Starting experiment '{experiment}' logging to {log_filename}")
+        command = ["python", "-u", ENTRY, "-E", experiment]
+        if args.profiling:
+            command.append("--profiling")
+        if args.only_keep_best_epoch:
+            command.append("-okbe")
+
         with open(log_filename, "w") as log_file:
-            subprocess.Popen(
-                command, stdout=log_file, stderr=log_file, start_new_session=True
-            )
-    elif env_type == "poetry":
-        # 使用 nohup 启动 Poetry 环境中的脚本，且子进程与父进程分离
-        with open(log_filename, "w") as log_file:
-            subprocess.Popen(
-                ["nohup", "poetry", "run"] + command[1:], stdout=log_file, stderr=log_file, start_new_session=True
-            )
+            if env_type == "conda":
+                process = subprocess.Popen(command, stdout=log_file, stderr=log_file)
+            elif env_type == "poetry":
+                process = subprocess.Popen(["poetry", "run"] + command, stdout=log_file, stderr=log_file)
+            else:
+                sys.exit(1)
+            process.wait()
+
+        log_filenames.append(log_filename)
 
     # 如果启用了监视选项，则清屏并启动监视
     if args.monitor:
         time.sleep(1)  # 确保日志文件开始写入
         os.system("cls" if os.name == "nt" else "clear")  # Windows: cls, Linux/Mac: clear
-        # 启动 tail 进程监控日志
-        subprocess.Popen(["tail", "-f", log_filename], start_new_session=True)
+        for log_filename in log_filenames:
+            subprocess.Popen(["tail", "-f", log_filename], start_new_session=True)
 
 
 if __name__ == "__main__":
