@@ -6,6 +6,7 @@ N_Classes = 50  # for esc-50
 AudioDuration = 5  # s
 
 AudioSampleRate = 44100
+RsampelTo = 16000
 WarmpUp = 10
 MaxLossOfVisualization = 10 
 # Optimizer & Scheduler
@@ -36,5 +37,5 @@ Distance = 1
 bias = 0.1
 std = 0.05
 # Camera Response
-SignalSourceSampleRate = AudioSampleRate // 4
+SignalSourceSampleRate = RsampelTo // 4
 CameraFrameRate = 30
