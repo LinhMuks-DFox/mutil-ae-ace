@@ -54,6 +54,12 @@ def main():
 
     # 先预先存储所有 RIR，便于计算最大长度
     all_rir_data = {}  # 结构: { category: [rir_mic0, rir_mic1, ... rir_micN], ... }
+    mic_positions = []
+    for i in range(args.num_mics):
+        mx = np.random.uniform(0.3, room_dim[0] - 0.3)
+        my = np.random.uniform(0.3, room_dim[1] - 0.3)
+        mz = np.random.uniform(0.3, room_dim[2] - 0.3)
+        mic_positions.append([mx, my, mz])
 
     for cat in args.categories:
         # 创建房间
@@ -68,13 +74,6 @@ def main():
         source_loc = source_positions[cat]
         room.add_source(source_loc)
 
-        # 随机摆放麦克风
-        mic_positions = []
-        for i in range(args.num_mics):
-            mx = np.random.uniform(0.3, room_dim[0] - 0.3)
-            my = np.random.uniform(0.3, room_dim[1] - 0.3)
-            mz = np.random.uniform(0.3, room_dim[2] - 0.3)
-            mic_positions.append([mx, my, mz])
 
         # Plot the layout if the plot flag is set
         if args.plot:
