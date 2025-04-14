@@ -191,3 +191,6 @@ dataset_info.yml
 .idea/
 autoencoder_checkpoint/
 trained/
+._DS_Store
+.DS_Store
+._.DS_Store
