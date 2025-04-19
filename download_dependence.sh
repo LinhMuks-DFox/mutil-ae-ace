@@ -1,7 +1,11 @@
 #!/bin/bash
 
 mkdir -p lib
-
+if [-d lib/__init__.py] then
+  echo "lib/__init__.py 已经存在，跳过创建"
+else
+  touch lib/__init__.py
+fi
 # Clone MuxkitTools
 if [ -d "lib/MuxkitTools" ]; then
   echo "[✓] MuxkitTools 已存在，跳过克隆。"
