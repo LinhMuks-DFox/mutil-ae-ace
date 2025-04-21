@@ -42,8 +42,8 @@ def get_hyperparameter_and_options_path(experiment_type: str) -> typing.Tuple[st
 
         "sdp": ("./soundpower/hyperparameters.py",
                 "./soundpower/options.py"),
-        "e2e": ("./e2e/hyperparameters.py",
-                "./e2e/options.py")
+        "e2e": ("./endtoend/hyperparameters.py",
+                "./endtoend/options.py")
     }[experiment_type]
 
 
