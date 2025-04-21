@@ -53,9 +53,9 @@ class AutoEncoder(nn.Module):
             ("relu4", nn.ReLU()),
         ]))
         self.encoder_flatten = nn.Flatten()
-        self.encoder_projection : nn.Module | None = None  # to be initialized on forward
-        self.decoder_input_linear : nn.Module | None = None # to be initialized on forward
-        self.decoder_unflatten : nn.Module | None = None    # to be initialized on forward
+        self.encoder_projection: nn.Module | None = None  # to be initialized on forward
+        self.decoder_input_linear: nn.Module | None = None  # to be initialized on forward
+        self.decoder_unflatten: nn.Module | None = None  # to be initialized on forward
         self.decoder_post = nn.Sequential(OrderedDict([
             ("deconv1", nn.ConvTranspose1d(n_mel // 4, n_mel // 4, kernel_size=11, stride=3)),
             ("relu1", nn.ReLU()),
@@ -79,13 +79,13 @@ class AutoEncoder(nn.Module):
         return ret
 
     def decode(self, z: torch.Tensor) -> torch.Tensor:
-        assert self.decoder_input_linear is not None and self.decoder_unflatten is not None , "Uninitializd layer"
+        assert self.decoder_input_linear is not None and self.decoder_unflatten is not None, "Uninitializd layer"
         z = self.decoder_input_linear(z)
         z = self.decoder_unflatten(z)
         x = self.decoder_post(z)
         return x
 
-    def forward(self, x):
+    def forward(self, x, require_latent=False):
         if x.dim() > 3:
             batch_size, _1, h, w = x.shape
             x = x.view(batch_size, h, w)
@@ -93,10 +93,24 @@ class AutoEncoder(nn.Module):
         x_hat = self.decode(z)
         if x_hat.shape[-1] != x.shape[-1]:
             x_hat = F.interpolate(x_hat, size=x.shape[-1], mode='linear', align_corners=False)
+
+        if require_latent:
+            return z, x_hat
         return x_hat
 
     @staticmethod
-    def from_structure_hyper_and_checkpoint(hyper: dict, checkpoint_path:str, device):
+    def from_structure_hyper_and_checkpoint(hyper: dict, checkpoint_path: str, device):
+        model = AutoEncoder.from_config(hyper, device)
+
+        checkpoint = torch.load(checkpoint_path)
+        if isinstance(checkpoint, dict) and 'model_state_dict' in checkpoint:
+            model.load_state_dict(checkpoint['model_state_dict'])
+        else:
+            model.load_state_dict(checkpoint)
+        return model
+
+    @staticmethod
+    def from_config(hyper: dict, device):
         n_mel = hyper.get('n_mel')
         latent_size = hyper.get('latent_size')
         num_heads = hyper.get('num_heads')
@@ -106,11 +120,4 @@ class AutoEncoder(nn.Module):
             dummy_input = torch.randn(*shape, device=device)
             with torch.no_grad():
                 model.encode(dummy_input)  # 激活lazy层
-
-        checkpoint = torch.load(checkpoint_path)
-        if isinstance(checkpoint, dict) and 'model_state_dict' in checkpoint:
-            model.load_state_dict(checkpoint['model_state_dict'])
-        else:
-            model.load_state_dict(checkpoint)
         return model
-    
