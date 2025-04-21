@@ -3,6 +3,7 @@ import typing
 import torch
 import torch.optim as optimize
 import torch.utils.data as tch_data
+import torchinfo
 
 from lib.MuxkitTools.audio_tools.bc_augmentation.bc_augmented_dataset import BCLearningDataset
 from lib.MuxkitTools.model_tools.stati import stati_model
@@ -128,12 +129,15 @@ class TrainContext(Context):  # 继承自 ABCContext
         self.validate_loss = torch.empty(0).to(self.device)
         self.train_loss = torch.empty(0).to(self.device)
 
+    @torch.no_grad()
     def summary(self):
         """
         生成训练摘要信息。
         """
         if self.summary_content is None:
-            summary = ["TrainContext Summary", f"Model:\n{str(self.model)}", f"Random seed: {self.random_seed}",
+            summary = ["TrainContext Summary",
+                       f"Model:\n{str(torchinfo.summary(self.model, next(iter(self.train_loader))[0].shape, verbose=0))}",
+                       f"Random seed: {self.random_seed}",
                        f"Dataset sizes - Train: {len(self.train_set)}, Validate: {len(self.validate_set)}, Test: {len(self.test_set)}"]
 
             # 数据集信息

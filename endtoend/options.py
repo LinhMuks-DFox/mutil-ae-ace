@@ -6,13 +6,13 @@ import torch
 import yaml
 
 CacheSize = 2000
-Device = "cuda" if torch.cuda.is_available() else "mps" if torch.mps.is_available() else "cpu"
-# Device = "cpu"
+# Device = "cuda" if torch.cuda.is_available() else "mps" if torch.mps.is_available() else "cpu"
+Device = "cpu"
 TrainID = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 SaveDirectory = f"./trained/{TrainID}-End-2-end"
 
 Platform: str = platform.platform()
-DryRun: bool = False
+DryRun: bool = True
 ModelDebugging: bool = True
 CompileModel = False
 

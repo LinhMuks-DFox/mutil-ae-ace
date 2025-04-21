@@ -17,7 +17,7 @@ from . import DataPreprocessor
 from . import hyperparameters as hyp
 from . import options as opt
 from .model import make_model
-
+import torchinfo
 
 class TrainContext(Context):  # 继承自 ABCContext
 
@@ -133,7 +133,9 @@ class TrainContext(Context):  # 继承自 ABCContext
         生成训练摘要信息。
         """
         if self.summary_content is None:
-            summary = ["TrainContext Summary", f"Model:\n{str(self.model)}", f"Random seed: {self.random_seed}",
+            summary = ["TrainContext Summary"
+                       f"Model:\n{str(torchinfo.summary(self.model, next(iter(self.train_loader))[0].shape, verbose=0))}",
+                       f"Random seed: {self.random_seed}",
                        f"Dataset sizes - Train: {len(self.train_set)}, Validate: {len(self.validate_set)}, Test: {len(self.test_set)}"]
 
             # 数据集信息
