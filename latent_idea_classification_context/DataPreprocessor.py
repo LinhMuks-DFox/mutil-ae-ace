@@ -14,10 +14,10 @@ class AdjustForResNet(torch.nn.Module):
     def forward(self, x: torch.Tensor):
         if x.dim() >= 3:
             batch, n_mic, nyquis_times_5_times_4led = x.shape
-            x = x.view(batch, 1, n_mic * 4, nyquis_times_5_times_4led // 4).contiguous()
+            x = x.reshape(batch, 1, n_mic * 4, nyquis_times_5_times_4led // 4).contiguous()
         elif x.dim() == 2:
             n_mic, nyquis_times_5_times_4led = x.shape
-            x = x.view(1, n_mic * 4, nyquis_times_5_times_4led // 4).contiguous()
+            x = x.reshape(1, n_mic * 4, nyquis_times_5_times_4led // 4).contiguous()
         return x
 
 

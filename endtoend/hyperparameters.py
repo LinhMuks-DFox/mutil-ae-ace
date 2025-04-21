@@ -21,7 +21,7 @@ SchedulerParameter = {
 }
 
 # Train parameters
-Epochs = 50 if not options.DryRun else 3
+Epochs = 500 if not options.DryRun else 3
 BatchSize = 100 if not options.DryRun else 100
 TrainSetTestMileStone = [
     i for i in range(Epochs) if i % 20 == 0 and i != 0
@@ -33,8 +33,8 @@ ResNet = 18
 
 # Light Propagation
 Distance = 1
-bias = 0.0
-std = 0.0
+bias = 0.1
+std = 0.05
 # Camera Response
 SignalSourceSampleRate = 15
 CameraFrameRate = 30

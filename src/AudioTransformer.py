@@ -92,7 +92,7 @@ class AudioTransformer(nn.Module):
     def expand(x: torch.Tensor):
         # [batch_size, n_mic, n_channel, num_tokens] -> [batch_size, n_mic * n_channel, num_tokens]
         batch_size, n_mic, n_channel, num_tokens = x.shape
-        return x.view(batch_size, n_mic * n_channel, num_tokens)
+        return x.reshape(batch_size, n_mic * n_channel, num_tokens)
 
     def forward(self, x: torch.Tensor):
         """

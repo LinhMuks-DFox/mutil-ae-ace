@@ -137,7 +137,7 @@ class AutoEncoderTrainer:
         """计算单次前向传播的loss。兼容多维数据"""
         if x.dim() > 3:
             batch_size, _, h, w = x.shape
-            x = x.view(batch_size, h, w)
+            x = x.reshape(batch_size, h, w)
         return self.loss_function(x, x_hat)
 
     def one_epoch_train(self):
