@@ -1,9 +1,9 @@
 import torch
 import yaml
 
+from src.AutoEncoder import AutoEncoder
 from src.LatentDataset import RIRWaveformToMelTransform, LatentTransform
 from . import options as opt
-from src.AutoEncoder import AutoEncoder
 
 
 class AdjustForResNet(torch.nn.Module):

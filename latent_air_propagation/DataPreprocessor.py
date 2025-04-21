@@ -1,14 +1,12 @@
-from typing import Union
-
 import torch
-import torchaudio
 import yaml
 
 from src.AutoEncoder import AutoEncoder
 from src.LatentDataset import RIRWaveformToMelTransform, LatentTransform
+from src.LightPropagationAndCameraResponse import LightPropagation, CameraResponse
 from . import hyperparameters as hyp
 from . import options as opt
-from src.LightPropagationAndCameraResponse import LightPropagation, CameraResponse
+
 
 class AdjustForResNet(torch.nn.Module):
     def __init__(self):
@@ -23,8 +21,6 @@ class AdjustForResNet(torch.nn.Module):
             n_mic, nyquis_times_5_times_4led = x.shape
             x = x.reshape(1, n_mic * 4, nyquis_times_5_times_4led // 4).contiguous()
         return x
-
-
 
 
 class DataPreprocessor(torch.nn.Module):

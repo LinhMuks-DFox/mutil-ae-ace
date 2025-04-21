@@ -8,13 +8,14 @@ class ToLogMelSpectrogram(nn.Module):
     """
     Convert waveform to Log-Mel Spectrogram using torchaudio.
     """
+
     def __init__(self, sample_rate=16000, n_fft=400, hop_length=160, n_mels=80):
         super().__init__()
         self.sample_rate = sample_rate
         self.n_fft = n_fft
         self.hop_length = hop_length
         self.n_mels = n_mels
-        
+
         self.mel_spec = T.MelSpectrogram(
             sample_rate=sample_rate,
             n_fft=n_fft,
@@ -36,7 +37,7 @@ class ToLogMelSpectrogram(nn.Module):
     def forward(self, audio_signal: torch.Tensor):
         mel = self.mel_spec(audio_signal)
         return self.to_db(mel)
-    
+
     def __str__(self):
         return (f"ToLogMelSpectrogram(sample_rate={self.sample_rate}, "
                 f"n_fft={self.n_fft}, hop_length={self.hop_length}, n_mels={self.n_mels})")
@@ -50,7 +51,7 @@ if __name__ == "__main__":
         cfg = yaml.safe_load(f)
     dataset, none = Dataset.AudiosetForMakingAutoEncoder.from_yaml(cfg, True, False)
     print(dataset[0])
-    
+
     with open("auto_encoder_hyperpara.yml", "r") as f:
         hyper = yaml.safe_load(f)
     transformer = ToLogMelSpectrogram.from_yaml(

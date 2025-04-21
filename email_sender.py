@@ -1,7 +1,9 @@
-import smtplib
-import yaml
 import argparse
+import smtplib
 from email.message import EmailMessage
+
+import yaml
+
 
 def send_email(subject, body, config_path="./configs/email_config.yml"):
     # 读取邮件配置
@@ -23,6 +25,7 @@ def send_email(subject, body, config_path="./configs/email_config.yml"):
         print("[✓] Notification email sent successfully.")
     except Exception as e:
         print(f"[✗] Failed to send notification email: {e}")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Send Email Notification")

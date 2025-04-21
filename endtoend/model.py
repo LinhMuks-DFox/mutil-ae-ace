@@ -1,13 +1,14 @@
 from collections import OrderedDict
 
-import torch.nn as nn
-from . import options as opt
-from torchvision.models import resnet50, resnet18, resnet34
 import torch
-from . import hyperparameters as hyp
+import torch.nn as nn
+import yaml
+from torchvision.models import resnet50, resnet18, resnet34
+
 from src.AutoEncoder import AutoEncoder
 from src.LightPropagationAndCameraResponse import LightPropagation, CameraResponse
-import yaml
+from . import hyperparameters as hyp
+from . import options as opt
 
 
 class AdjustForResNet(torch.nn.Module):
@@ -24,6 +25,7 @@ class AdjustForResNet(torch.nn.Module):
             x = x.reshape(1, n_mic * 4, nyquis_times_5_times_4led // 4).contiguous()
         return x
 
+
 class EndToEndModel(nn.Module):
 
     def __init__(self, resnet_type, n_cls):
@@ -39,7 +41,7 @@ class EndToEndModel(nn.Module):
         self.resnet = get_resnet(resnet_type, n_cls)
         self.adjust = AdjustForResNet()
 
-    def forward(self, x:torch.Tensor):
+    def forward(self, x: torch.Tensor):
         batch_size, n_mic, h, w = x.shape
         x = x.reshape(batch_size * n_mic, h, w)
         latent = self.auto_encoder.encode(x)

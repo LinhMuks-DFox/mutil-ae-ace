@@ -1,22 +1,24 @@
 import typing
+
 import torch
-import torch.nn as nn
 import torch.optim as optimize
 import torch.utils.data as tch_data
 
+from lib.MuxkitTools.audio_tools.bc_augmentation.bc_augmented_dataset import BCLearningDataset
+from lib.MuxkitTools.model_tools.stati import stati_model
 from lib.MuxkitTools.score_tools.ClassifierTester import MonoLabelClassificationTester
 from lib.esc50_io.ESC50IO import get_index_to_category
 from src.ABCContext import Context
+from src.LatentDataset import DataTensorDataset
+from src.PreprocessedDataset import create_cached_preprocessed_dataset, create_preprocessed_acoustic_dataset
+from src.SoftmaxLogKLDivLoss import SoftmaxLogKLDivLoss
+from src.WarpedReduceLROnPlateau import WarpedReduceLROnPlateau
+from . import DataPreprocessor
 from . import hyperparameters as hyp
 from . import options as opt
 from .model import make_model
-from src.LatentDataset import DataTensorDataset
-from src.PreprocessedDataset import create_cached_preprocessed_dataset, create_preprocessed_acoustic_dataset
-from . import DataPreprocessor
-from lib.MuxkitTools.audio_tools.bc_augmentation.bc_augmented_dataset import BCLearningDataset
-from lib.MuxkitTools.model_tools.stati import stati_model
-from src.WarpedReduceLROnPlateau import WarpedReduceLROnPlateau
-from src.SoftmaxLogKLDivLoss import SoftmaxLogKLDivLoss
+
+
 class TrainContext(Context):  # 继承自 ABCContext
 
     def __init__(self, serial: typing.Optional[typing.Dict[str, typing.Any]] = None):
@@ -29,8 +31,7 @@ class TrainContext(Context):  # 继承自 ABCContext
          .set_context_identifier(f"resnet_{opt.TrainID}{'_dryrun' if opt.DryRun else ''}")
          .set_visualaization_loss_clamp(hyp.MaxLossOfVisualization)
          .set_warm_up(hyp.WarmpUp))
-        
-        
+
         self.full_initialization()
         if serial is not None:
             self.unserialize(serial)
@@ -60,6 +61,7 @@ class TrainContext(Context):  # 继承自 ABCContext
             metrics_name=hyp.ReduceLROnPlateauMetricsName,
             min_lr=hyp.ReduceLROnPlateauMinLR
         )
+
     def initialize_datasets(self):
         train_set = DataTensorDataset.from_datatensor_path(
             split="train",

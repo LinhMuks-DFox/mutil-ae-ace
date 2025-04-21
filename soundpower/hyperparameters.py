@@ -8,7 +8,7 @@ AudioDuration = 5  # s
 AudioSampleRate = 44100
 ResampleTo = 16000
 WarmpUp = 10
-MaxLossOfVisualization = 10 
+MaxLossOfVisualization = 10
 # Optimizer & Scheduler
 LearningRate = 0.001
 WeightDecay = 5e-5

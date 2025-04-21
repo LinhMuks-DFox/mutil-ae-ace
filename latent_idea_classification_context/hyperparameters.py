@@ -5,7 +5,7 @@ N_Classes = 50  # for esc-50
 
 AudioDuration = 5  # s
 WarmpUp = 10
-MaxLossOfVisualization = 10 
+MaxLossOfVisualization = 10
 
 AudioSampleRate = 44100
 
@@ -32,5 +32,3 @@ SoundTrack = "mix"
 
 # resnet
 ResNet = 18
-
-

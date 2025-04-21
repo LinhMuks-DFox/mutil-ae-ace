@@ -1,12 +1,14 @@
 import csv
 import json
+import logging
 import os
 import typing
+
 import matplotlib.pyplot as plt
-import logging
+
 from lib.MuxkitTools.plot_tools.SklearnConfusionMatrixPlotter import ConfusionMatrixPlotter
-from src.ABCContext import Context
 from lib.MuxkitTools.score_tools.ClassifierTester import MetricsStatusMap
+from src.ABCContext import Context
 
 _METRICS_REPORT_MSG_FMT = (
     "{dataset} F1:                {f1:<10.5g}\n"

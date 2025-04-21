@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
-from torch.utils.data import Dataset
 import torchaudio.transforms as T
+from torch.utils.data import Dataset
+
 from src.AutoEncoder import AutoEncoder
 
 

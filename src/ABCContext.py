@@ -1,4 +1,3 @@
-from lib.MuxkitTools.score_tools.ClassifierTester import MetricsStatusMap, ClassifierTester
 import json
 import os
 import typing
@@ -9,6 +8,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as tch_data
+
+from lib.MuxkitTools.score_tools.ClassifierTester import MetricsStatusMap, ClassifierTester
 from lib.MuxkitTools.train_tools.utils import set_manual_seed
 
 OptionalModule = typing.Optional[torch.nn.Module]
@@ -52,6 +53,7 @@ class Context(ABC):
     test_set: torch.utils.data.Dataset | None
     visualaization_loss_clamp: float | None = 10
     warm_up: int | None = 10
+
     def __init__(self):
         self.device = "cpu"
         self.best_model_occ_epoch = -1
@@ -84,11 +86,11 @@ class Context(ABC):
     def set_device(self, device: torch.device | str):
         self.device = device
         return self
-    
+
     def set_visualaization_loss_clamp(self, visualaization_loss_clamp: float | str):
         self.visualaization_loss_clamp = visualaization_loss_clamp
         return self
-    
+
     def set_warm_up(self, warm_up=10):
         self.warm_up = warm_up
         return self

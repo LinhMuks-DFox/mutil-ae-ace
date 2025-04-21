@@ -1,8 +1,10 @@
 import datetime
-import platform
 import pathlib
+import platform
+
 import torch
 import yaml
+
 CacheSize = 2000
 Device = "cuda" if torch.cuda.is_available() else "mps" if torch.mps.is_available() else "cpu"
 TrainID = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
@@ -12,7 +14,6 @@ Platform: str = platform.platform()
 DryRun: bool = False
 ModelDebugging: bool = True
 CompileModel = True
-
 
 BASE_DIR = pathlib.Path(__file__).resolve().parent.parent  # 假设你在 src/ 目录下
 with open(BASE_DIR / "configs/dataset_info.yml", "r") as f:

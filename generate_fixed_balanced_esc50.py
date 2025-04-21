@@ -1,8 +1,8 @@
-import os
+import argparse
+
 import torch
 import yaml
-import argparse
-from pathlib import Path
+
 from lib.esc50_io.ESC50IO.ESC50 import ESC50, label_balanced_split_esc50
 
 epilog = """\

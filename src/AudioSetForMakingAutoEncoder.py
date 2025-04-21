@@ -1,7 +1,9 @@
-from lib.AudioSet.IO import JsonBasedAudioSet
-import torch.utils.data as tch_data
 import typing
+
 import torch
+import torch.utils.data as tch_data
+
+from lib.AudioSet.IO import JsonBasedAudioSet
 
 
 class AudiosetForMakingAutoEncoder(tch_data.Dataset):

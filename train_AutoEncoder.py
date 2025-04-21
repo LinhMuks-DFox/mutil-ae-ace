@@ -1,32 +1,32 @@
-import os
-import sys
-import random
-import yaml
-import smtplib
-import torch
-import torch.nn as nn
-import torch.nn.init as init
-import torch.optim as optim
-import numpy as np
-import matplotlib.pyplot as plt
 import logging
-
+import os
+import random
+import smtplib
+import sys
 from datetime import datetime
 from email.message import EmailMessage
-from torch.utils.data import DataLoader, random_split
-import tqdm
-import torchinfo
-import torchaudio.transforms as T
-from lib.AudioSet.transform import TimeSequenceLengthFixer, SoundTrackSelector
-import lib.MuxkitTools.dataset_tools.CachableDataset as mk_cachedata
 
-import src.AutoEncoder as AutoEncoder
-import src.AudioSetForMakingAutoEncoder as AudioSetForMakingAutoEncoder
-import src.ToLogMelSpectrogram as ToLogMelSpectrogram
+import matplotlib.pyplot as plt
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torchaudio.transforms as T
+import torchinfo
+import tqdm
+import yaml
+from torch.utils.data import DataLoader, random_split
+
+import lib.MuxkitTools.dataset_tools.CachableDataset as mk_cachedata
 import src.AudioSetForMakingAutoEncoder as Dataset
+import src.AutoEncoder as AutoEncoder
+import src.ToLogMelSpectrogram as ToLogMelSpectrogram
+from lib.AudioSet.transform import TimeSequenceLengthFixer, SoundTrackSelector
+
 
 class ToDevice(nn.Module):
     """将输入Tensor迁移到指定设备的简单Module封装。"""
+
     def __init__(self, device="cuda"):
         super().__init__()
         self.device = device
@@ -34,8 +34,9 @@ class ToDevice(nn.Module):
     def forward(self, x):
         return x.to(self.device)
 
+
 class AutoEncoderTrainer:
-    def __init__(self, 
+    def __init__(self,
                  hyperpara_path="auto_encoder_hyperpara.yml",
                  email_config_path="email_config.yml",
                  other_configs_path="other_configs.yml",
@@ -59,8 +60,8 @@ class AutoEncoderTrainer:
             yaml.dump(self.hyper_parameter, f)
 
         # 设置日志记录
-        logging.basicConfig(filename=os.path.join(self.run_dir, 'train.log'), 
-                            level=logging.INFO, 
+        logging.basicConfig(filename=os.path.join(self.run_dir, 'train.log'),
+                            level=logging.INFO,
                             format='%(asctime)s - %(levelname)s - %(message)s')
 
         # 设备
@@ -174,7 +175,7 @@ class AutoEncoderTrainer:
         filename = f"epoch_{epoch}" if epoch is not None else "final"
         filename += ".pt"
         save_path = os.path.join(self.run_dir, "checkpoints", filename)
-        
+
         torch.save({
             'epoch': epoch,
             'model_state_dict': self.model.state_dict(),
@@ -183,7 +184,7 @@ class AutoEncoderTrainer:
             'validate_losses': self.validate_losses,
             'lr_list': self.lr_list,
         }, save_path)
-        
+
         logging.info("[✓] Checkpoint saved: %s", save_path)
 
     def plot_losses(self, save_path="loss_curve.png"):
@@ -315,6 +316,7 @@ class AutoEncoderTrainer:
             self.plot_losses("loss_curve_exception.png")
             self.plot_learning_rate("lr_curve_exception.png")
             raise e
+
 
 if __name__ == "__main__":
     trainer = AutoEncoderTrainer(

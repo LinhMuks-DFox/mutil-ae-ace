@@ -1,6 +1,8 @@
+from typing import Union
+
 import torch
 import torchaudio
-from typing import  Union
+
 
 class LightPropagation(torch.nn.Module):
     def __init__(self, distance: float, bias: Union[float, None], std: float):

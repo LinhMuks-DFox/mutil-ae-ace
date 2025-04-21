@@ -74,7 +74,6 @@ def main():
         source_loc = source_positions[cat]
         room.add_source(source_loc)
 
-
         # Plot the layout if the plot flag is set
         if args.plot:
             fig = plt.figure()

@@ -1,9 +1,10 @@
 import torch
 import torchaudio
-from typing import Union
-from . import hyperparameters as hyp
+
 from lib.AudioSet.transform import TimeSequenceLengthFixer
 from src.LightPropagationAndCameraResponse import CameraResponse, LightPropagation
+from . import hyperparameters as hyp
+
 
 class AdjustForResNet(torch.nn.Module):
     def __init__(self):

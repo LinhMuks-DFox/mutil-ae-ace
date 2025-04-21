@@ -1,8 +1,8 @@
+from collections import OrderedDict
+
+import numpy as np
 import torch
 import torch.nn as nn
-import math
-from collections import OrderedDict
-import numpy as np
 
 EmbeddingLayerType = torch.nn.Module
 

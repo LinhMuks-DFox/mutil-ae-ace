@@ -1,7 +1,9 @@
 import os
+
 import torch
 import torch.nn as nn
 import torchaudio.transforms as T
+
 
 class MultiFixedFilterRoomSim(nn.Module):
     """
@@ -71,7 +73,8 @@ class MultiFixedFilterRoomSim(nn.Module):
 
         # 将不同麦克风结果在 "channel" 维度拼起来 => shape [n_mics, out_len]
         return torch.cat(out_list, dim=0)
-    
+
+
 if __name__ == "__main__":
     import torch
 
@@ -97,7 +100,7 @@ if __name__ == "__main__":
     out = sim(audio, cat_id)
     print("输出张量形状:", out.shape)
     # out.shape = [n_mics, out_len]
-    
+
     # 如果你想使用类别 ID=1
     cat_id = 1
     out2 = sim(audio, cat_id)

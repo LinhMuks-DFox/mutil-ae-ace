@@ -26,7 +26,5 @@ class MyTestCase(unittest.TestCase):
         # print(out.shape)
 
 
-
-
 if __name__ == '__main__':
     unittest.main()
