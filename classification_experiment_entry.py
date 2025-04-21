@@ -115,7 +115,7 @@ def main():
 def parse_arguments():
     parser = argparse.ArgumentParser(description="TrainApp configuration")
     parser.add_argument("-E", "--experiment", type=str, required=True,
-                        choices=["ltidl", "speidl", "ltari", "sdp", "e2eWS"],
+                        choices=["ltidl", "speidl", "ltari", "sdp", "e2e"],
                         help="Specify the experiment type.")
     parser.add_argument("-p", "--profiling", action="store_true", default=False, help="Run script with torch profile")
     parser.add_argument("-okbe", "--only-keep-best-epoch", action="store_true", default=False, help="只保留最好的epoch")
