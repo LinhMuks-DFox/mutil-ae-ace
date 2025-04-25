@@ -41,11 +41,18 @@ class EndToEndModel(nn.Module):
         self.resnet = get_resnet(resnet_type, n_cls)
         self.adjust = AdjustForResNet()
 
+    @staticmethod
+    def blinky_data_normalize(data: torch.Tensor):
+        with torch.no_grad():
+            data_min = torch.min(data)
+            de_min = data - data_min
+            return de_min / torch.max(de_min)
     def forward(self, x: torch.Tensor):
         batch_size, n_mic, h, w = x.shape
         x = x.reshape(batch_size * n_mic, h, w)
         latent = self.auto_encoder.encode(x)
         latent = latent.reshape(batch_size, n_mic, -1)
+        latent = self.blinky_data_normalize(latent)
         latent = self.adjust(latent)
         latent = self.light_propagation(latent)
         latent = self.camera_sample(latent)
