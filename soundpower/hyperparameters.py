@@ -35,7 +35,7 @@ ResNet = 18
 # Light Propagation
 Distance = 1
 bias = 0.1
-std = 0.05
+std = 0.0
 # Camera Response
 SignalSourceSampleRate = ResampleTo // 4
 CameraFrameRate = 30
