@@ -65,6 +65,7 @@ class AutoEncoder(nn.Module):
             ("deconv3", nn.ConvTranspose1d(n_mel // 2, n_mel, kernel_size=5, stride=1)),
         ]))
 
+
     def encode(self, x: torch.Tensor) -> torch.Tensor:
         if x.dim() > 3:
             batch_size, _1, h, w = x.shape
@@ -103,7 +104,7 @@ class AutoEncoder(nn.Module):
     def from_structure_hyper_and_checkpoint(hyper: dict, checkpoint_path: str, device):
         model = AutoEncoder.from_config(hyper, device)
 
-        checkpoint = torch.load(checkpoint_path)
+        checkpoint = torch.load(checkpoint_path, weights_only=True)
         if isinstance(checkpoint, dict) and 'model_state_dict' in checkpoint:
             model.load_state_dict(checkpoint['model_state_dict'])
         else:
@@ -122,3 +123,19 @@ class AutoEncoder(nn.Module):
             with torch.no_grad():
                 model.encode(dummy_input)  # 激活lazy层
         return model
+        
+    def get_encoder(self, require_flatten=True, require_projection=True):
+        if require_projection and self.encoder_projection is None: 
+           raise RuntimeError("AutoEncode are not initialized yet; please call forward() at least once")
+        layers = OrderedDict()
+        layers["encoder"] = self.encoder
+
+        if require_flatten:
+            layers["flatten"] = self.encoder_flatten
+
+        if require_projection:
+            assert self.encoder_projection is not None, "encoder_projection is not initialized. Please run a forward pass first."
+            layers["projection"] = self.encoder_projection
+
+        return nn.Sequential(layers)
+

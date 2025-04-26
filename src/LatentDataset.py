@@ -42,7 +42,7 @@ class DataTensorDataset(Dataset):
         """
             split: train test validate in string
         """
-        dataset_dict = torch.load(data_tensor_path, map_location=device)
+        dataset_dict = torch.load(data_tensor_path, map_location=device, weights_only=True)
         if split not in dataset_dict:
             raise ValueError(f"split='{split}' not found in {data_tensor_path}, available={list(dataset_dict.keys())}")
 
