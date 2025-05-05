@@ -1,122 +1,130 @@
--- -- xmake.lua (适配平面目录结构)
+-- xmake.lua (基于你的版本，添加 Linux 支持)
+
+-- [[ 你注释掉的全局设置 ]]
 -- set_project("OnnxCppInference")
 -- set_version("1.0.0")
--- set_default_target("onnx_infer") -- 设置默认构建目标
-
--- -- 设置语言标准和警告级别
--- set_languages("cxx17") -- 或 "cxx20", "cxxlatest"
+-- set_default_target("onnx_infer")
+-- set_languages("cxx17")
 -- set_warnings("all")
--- set_optimize("release") -- 或 "debug" 用于调试
+-- set_optimize("release")
+-- add_requires("portaudio", { system = false }) -- 尝试查找或构建本地版本
 
 -- 定义可执行目标 'onnx_infer'
 target("onnx_infer")
     set_kind("binary") -- 类型为可执行文件
+
+    -- --- 添加 RPATH 设置 (区分平台) ---
     if is_plat("macosx") then
         add_rpathdirs("@loader_path") -- @loader_path 指向可执行文件所在的目录
         print("Added @loader_path to RPATH for macOS")
+    elseif is_plat("linux") then
+        -- Linux: 使用 $ORIGIN (指向可执行文件自身所在的目录)
+        add_rpathdirs("$ORIGIN")
+        print("Added $ORIGIN to RPATH for Linux")
     end
+    -- ------------------------------------
+
     -- 添加源文件 (都在根目录)
     add_files("main.cpp")
     -- 不需要添加 infer.cpp 了
 
     -- 添加头文件搜索路径
-    -- xmake 默认会搜索当前目录，所以 infer.hpp 能被 main.cpp 找到
-    -- 添加 ONNX Runtime 的 include 目录
     add_includedirs("vendor/onnxruntime/include", {public = true})
 
     -- 添加库文件搜索路径
     add_linkdirs("vendor/onnxruntime/lib")
 
     -- 链接 ONNX Runtime 库
-    -- 库名称通常是 onnxruntime (不带lib前缀和.so/.lib/.dylib后缀)
-    -- xmake 会自动处理平台差异
     add_links("onnxruntime")
+    add_packages("portaudio")
 
     -- [[ 根据平台和使用的 Execution Provider 添加特定依赖 ]]
-    -- 例如 Linux 通常需要 pthread 和 dl
-    -- if is_plat("linux") then
-    --     add_syslinks("pthread", "dl")
-    -- end
-    -- 例如 macOS 使用 CoreML EP 可能需要链接框架
+    if is_plat("linux") then
+        -- Linux 下链接 ONNX Runtime 可能需要这些系统库
+         add_syslinks("pthread", "dl")
+         print("Added syslinks pthread, dl for Linux")
+    end
     -- if is_plat("macosx") then
-    --     -- add_frameworks("CoreFoundation", "Foundation", "CoreML")
+    --    -- add_frameworks("CoreFoundation", "Foundation", "CoreML")
     -- end
 
-    -- 打印消息，方便调试确认路径
     print("Using ONNX Runtime from: ./vendor/onnxruntime")
 
+    -- 确保 C++ 标准设置在 target 内部或外部均可，这里放在内部
     set_languages("c++17")
+
+    -- --- 添加链接后脚本来复制共享库 (区分平台) ---
     after_link(function (target)
-        -- 只在构建 onnx_infer 目标且是 macOS 平台时执行
-        if target:name() == "onnx_infer" and is_plat("macosx") then
+        -- 只为 onnx_infer 可执行目标运行
+        if target:name() == "onnx_infer" and target:kind() == "binary" then
+
+            -- 定义一个内部辅助函数用于查找和复制
+            local function copy_shared_lib(sourcedir, targetdir, pattern)
+                print("Searching for pattern '" .. pattern .. "' in " .. sourcedir)
+                local lib_full_source_path = nil
+                local lib_filename = nil
+                -- 使用 os.files 获取文件列表 (之前确认过可以获取绝对路径)
+                local found_files = os.files(path.join(sourcedir, pattern))
+
+                if #found_files == 0 then
+                    print("Warning: No files found matching pattern '" .. pattern .. "'!")
+                    return -- 找不到就返回
+                end
+
+                -- 通常取列表中的第一个
+                lib_full_source_path = found_files[1]
+                lib_filename = path.filename(lib_full_source_path)
+                print("Found library candidate: " .. lib_full_source_path)
+                print("Filename: " .. lib_filename)
+
+                local destination_path = path.join(targetdir, lib_filename)
+                print("Attempting to copy '" .. lib_full_source_path .. "' to '" .. destination_path .. "'")
+
+                local copy_result, errmsg = os.cp(lib_full_source_path, destination_path)
+                if copy_result then
+                    print("Copy successful for: " .. lib_filename)
+                else
+                    print("ERROR: Failed to copy shared library: " .. lib_filename)
+                    if errmsg then print("Reason from os.cp: " .. errmsg) end
+                end
+            end -- end function copy_shared_lib
+
+
             local sourcedir = path.join(os.projectdir(), "vendor/onnxruntime/lib")
-            local targetdir = target:targetdir() -- 获取目标文件输出目录 (e.g., build/macosx/arm64/release)
+            local targetdir = target:targetdir() -- 获取目标输出目录
 
             print("--- Running after_link script for target: " .. target:name() .. " ---")
-            print("Source directory for dylib: " .. sourcedir)
+            print("Source directory for shared libs: " .. sourcedir)
             print("Target directory for copy: " .. targetdir)
 
             -- 确保目标目录存在
             if not os.isdir(targetdir) then
                 print("Creating target directory: " .. targetdir)
-                os.mkdirs(targetdir) -- Use recursive mkdir
+                os.mkdirs(targetdir)
             else
                  print("Target directory already exists.")
             end
 
-            -- 查找 dylib 文件 (名字可能包含版本号)
-            local dylib_pattern = "libonnxruntime.*.dylib"
-            local dylib_full_source_path = nil -- 存储找到的 dylib 的完整源路径
-            local dylib_filename = nil       -- 存储找到的 dylib 的文件名
-
-            print("Searching for '" .. dylib_pattern .. "' in " .. sourcedir)
-            local found_files = os.files(path.join(sourcedir, dylib_pattern)) -- os.files 返回的是完整路径列表
-
-            if #found_files == 0 then
-                 print("ERROR: No files found matching pattern '" .. dylib_pattern .. "'!")
+            -- --- 根据平台执行复制 ---
+            if is_plat("macosx") then
+                print("Platform: macOS. Copying dylib...")
+                copy_shared_lib(sourcedir, targetdir, "libonnxruntime.*.dylib")
+            elseif is_plat("linux") then
+                print("Platform: Linux. Copying .so files...")
+                -- 复制版本化的 .so 文件 (如 libonnxruntime.so.1.17.3)
+                copy_shared_lib(sourcedir, targetdir, "libonnxruntime.so.*")
+                -- 复制 .so 符号链接 (或文件本身，如 libonnxruntime.so)
+                copy_shared_lib(sourcedir, targetdir, "libonnxruntime.so")
+            elseif is_plat("windows") then
+                print("Platform: Windows. Copying dll...")
+                 copy_shared_lib(sourcedir, targetdir, "onnxruntime.dll")
+                 -- copy_shared_lib(sourcedir, targetdir, "onnxruntime.lib")
             else
-                for i, file_path_absolute in ipairs(found_files) do
-                    print("Found file candidate [" .. i .. "]: " .. file_path_absolute)
-                    -- 假设第一个匹配的就是我们要找的
-                    if i == 1 then
-                        -- *** 修正 ***
-                        -- file_path_absolute 已经是完整的源路径了
-                        dylib_full_source_path = file_path_absolute
-                        -- 使用 path.filename() 提取纯粹的文件名
-                        dylib_filename = path.filename(file_path_absolute)
-                        print("Selected dylib full path: " .. dylib_full_source_path)
-                        print("Selected dylib filename: " .. dylib_filename)
-                        break -- 找到第一个就跳出循环
-                    end
-                end
+                 print("Warning: Unknown platform for after_link copy step.")
             end
+            -- -----------------------
 
-            -- 如果找到了 dylib 文件和文件名，则执行复制
-            if dylib_full_source_path and dylib_filename then
-                -- *** 修正 ***
-                -- 构建目标路径：目标目录 + 文件名
-                local destination_path = path.join(targetdir, dylib_filename)
-                print("Attempting to copy '" .. dylib_full_source_path .. "' to '" .. destination_path .. "'")
-
-                -- 执行复制 (源路径是 dylib_full_source_path)
-                local copy_result, errmsg = os.cp(dylib_full_source_path, destination_path)
-                if copy_result then
-                    print("Copy successful!")
-                else
-                    print("ERROR: Failed to copy dylib!")
-                    if errmsg then print("Reason from os.cp: " .. errmsg) end
-                end
-            else
-                print("ERROR: Could not determine the dylib path or filename to copy.")
-            end
             print("--- Finished after_link script ---")
-        end
-    end)
-
-
--- 设置默认运行的目标 (可选)
--- after_build(function (target)
---     if target:name() == "onnx_infer" and target:kind() == "binary" then
---         os.exec("echo Run with: ./build/.../onnx_infer preproc_encoder.onnx path/to/audio.wav")
---     end
--- end)
+        end -- end if target name matches
+    end) -- end after_link
+    -- -------------------------------------------------
