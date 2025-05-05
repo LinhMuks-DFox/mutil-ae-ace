@@ -198,3 +198,5 @@ trained/
 vendor/
 *.onnx
 compile_commands.json
+*.npy
+*.wav
