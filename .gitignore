@@ -197,3 +197,4 @@ trained/
 .xmake
 vendor/
 *.onnx
+compile_commands.json
