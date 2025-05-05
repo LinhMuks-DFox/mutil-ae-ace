@@ -3,6 +3,7 @@ import os
 import shutil
 
 from src.ABCContext import Context
+from concurrent.futures import ThreadPoolExecutor
 
 
 class TrainFileManager:
@@ -13,15 +14,21 @@ class TrainFileManager:
         self.last_optimal_validation_epoch: int = -1
         self.last_saved_epoch: int = -1
 
+
+    def safe_rmtree(self, path):
+        if os.path.exists(path):
+            try:
+                shutil.rmtree(path)
+            except Exception as e:
+                self.logger.warning(f"Failed to remove {path}: {e}")
+
     def delete_epoch_save_file_by_index(self, epoch_index: int):
         if epoch_index < 0:
             return
         path = self.ctx.compose_dump_path(epoch_index)
-        if os.path.exists(path):
-            self.logger.info(f"Removing directory for epoch {epoch_index}: {path}")
-            shutil.rmtree(path)
-        else:
-            self.logger.warning(f"Path not found for epoch {epoch_index}: {path}")
+        self.logger.info(f"Scheduling deletion for epoch {epoch_index}: {path}")
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            executor.submit(self.safe_rmtree, path)
 
     def update_optimal_validation_epoch(self, epoch_index: int, current_score: float, best_score: float):
         if current_score > best_score:
