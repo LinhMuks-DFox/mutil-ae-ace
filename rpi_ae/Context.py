@@ -82,7 +82,9 @@ class TrainContext(Context):  # 继承自 ABCContext
             device=self.device,
             n_cls=hyp.N_Classes
         )
-        self.data_preprocessor = DataPreprocessor.DataPreprocessor().to(self.device)
+        self.validate_preprocessor = DataPreprocessor.RPIAE_Eval_DataPreprocessor().to(self.device)
+        self.data_preprocessor = DataPreprocessor.RPIAE_Train_DataPreprocessor().to(self.device)
+
 
         train_set = BCLearningDataset(
             train_set, hyp.AudioSampleRate, hyp.N_Classes, self.device
@@ -97,7 +99,7 @@ class TrainContext(Context):  # 继承自 ABCContext
         )
 
         self.test_set = create_cached_preprocessed_dataset(
-            self.data_preprocessor,
+            self.validate_preprocessor,
             test_set,
             opt.CacheSize,
             self.device,
@@ -105,7 +107,7 @@ class TrainContext(Context):  # 继承自 ABCContext
             True
         )
         self.validate_set = create_cached_preprocessed_dataset(
-            self.data_preprocessor,
+            self.validate_preprocessor,
             validate_set,
             opt.CacheSize,
             self.device,
