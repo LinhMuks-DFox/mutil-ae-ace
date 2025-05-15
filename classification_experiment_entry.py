@@ -15,6 +15,7 @@ from latent_air_propagation.Context import TrainContext as latent_air_context
 from latent_idea_classification_context.Context import TrainContext as latent_idea_classification_context
 from raw_data.Context import TrainContext as spectrogram_ideal_context
 from soundpower.Context import TrainContext as sound_power_context
+from rpi_ae.Context import TrainContext as rpi_ae_context
 from src.ABCContext import Context
 from src.Trainer import Trainer
 
@@ -25,7 +26,8 @@ def make_context(experiment_type: str) -> Context:
         "speidl": spectrogram_ideal_context,
         "ltari": latent_air_context,
         "sdp": sound_power_context,
-        "e2e": e2e_context
+        "e2e": e2e_context,
+        "rpi": rpi_ae_context
     }[experiment_type]()
 
 
@@ -43,7 +45,9 @@ def get_hyperparameter_and_options_path(experiment_type: str) -> typing.Tuple[st
         "sdp": ("./soundpower/hyperparameters.py",
                 "./soundpower/options.py"),
         "e2e": ("./endtoend/hyperparameters.py",
-                "./endtoend/options.py")
+                "./endtoend/options.py"),
+        "rpi": ("./rpi_ae/hyperparameters.py",
+                "./rpi_ae/options.py"),
     }[experiment_type]
 
 
@@ -92,7 +96,8 @@ def main():
         "speidl": "speidl",
         "ltari": "ltari",
         "sdp": "sdp",
-        "e2e": "e2e"
+        "e2e": "e2e",
+        "rpi": "rpi",
     }[args.experiment.lower()]
     print("Context making...")
     context: Context = make_context(experiment_type)
@@ -115,7 +120,7 @@ def main():
 def parse_arguments():
     parser = argparse.ArgumentParser(description="TrainApp configuration")
     parser.add_argument("-E", "--experiment", type=str, required=True,
-                        choices=["ltidl", "speidl", "ltari", "sdp", "e2e"],
+                        choices=["ltidl", "speidl", "ltari", "sdp", "e2e", "rpi"],
                         help="Specify the experiment type.")
     parser.add_argument("-p", "--profiling", action="store_true", default=False, help="Run script with torch profile")
     parser.add_argument("-okbe", "--only-keep-best-epoch", action="store_true", default=False, help="只保留最好的epoch")

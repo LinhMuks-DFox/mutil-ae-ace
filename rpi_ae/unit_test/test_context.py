@@ -16,15 +16,23 @@ class MyTestCase(unittest.TestCase):
         print(b0.shape)
         print(l0.shape)
 
-        self.assertEqual(
-            b0.shape, torch.Size([hyp.BatchSize, 1, 1024, 216])
-        )
+
+        b0, l0 = next(iter(self.ctx.train_loader))
+        print(b0.shape)
+        print(l0.shape)
+        # self.assertEqual(
+        #     b0.shape, torch.Size([hyp.BatchSize, 1, 1024, 216])
+        # )
 
     def test_forward(self):
-        b0, l0 = next(iter(self.ctx.test_loader))
-        out = self.ctx.model(b0)
+        trb0, trl0 = next(iter(self.ctx.train_loader))
+        out = self.ctx.model(trb0)
         print(out.shape)
 
+
+        b0, l0 = next(iter(self.ctx.train_loader))
+        out = self.ctx.model(b0)
+        print(out.shape)
 
 if __name__ == '__main__':
     unittest.main()

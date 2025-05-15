@@ -5,27 +5,16 @@
         "-s",
         ".",
         "-p",
-        "*test*.py"
+        "test_*.py"
     ],
     "python.testing.unittestEnabled": true,
-    "python.testing.nosetestsEnabled": false,
-    "testing.automaticallyOpenTesting": true,
     "python.testing.autoTestDiscoverOnSaveEnabled": true,
     "python.testing.cwd": "${workspaceFolder}",
-    "python.experiments.optOutFrom": [
-        "pythonTestAdapter"
-    ],
+    // "python.experiments.optOutFrom": [
+    //     "pythonTestAdapter"
+    // ],
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
         "source.organizeImports": "explicit"
     },
-    "python.formatting.provider": "black",
-    "python.formatting.blackArgs": [
-        "--line-length",
-        "88"
-    ],
-    "python.sortImports.args": [
-        "--profile",
-        "black"
-    ]
 }
