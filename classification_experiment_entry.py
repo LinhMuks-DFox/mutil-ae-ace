@@ -123,7 +123,10 @@ def parse_arguments():
 
 
 if __name__ == "__main__":
+    import matplotlib
+    matplotlib.use('Agg')  # ✅ 添加此行，防止 Qt 插件加载错误
     with torch.amp.autocast(
             device_type="cuda" if torch.cuda.is_available() else "mps" if torch.mps.is_available() else "cpu",
             dtype=torch.float32):
+        torch.set_float32_matmul_precision('high')
         profiling_main() if parse_arguments().profiling else main()
