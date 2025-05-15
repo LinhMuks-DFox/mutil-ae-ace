@@ -138,7 +138,6 @@ class TrainContext(Context):  # 继承自 ABCContext
                        f"Model:\n{str(torchinfo.summary(self.model, next(iter(self.train_loader))[0].shape, verbose=0))}",
                        f"Random seed: {self.random_seed}",
                        f"Dataset sizes - Train: {len(self.train_set)}, Validate: {len(self.validate_set)}, Test: {len(self.test_set)}"]
-
             # 数据集信息
 
             # 数据输入输出形状
@@ -170,4 +169,8 @@ class TrainContext(Context):  # 继承自 ABCContext
                 f"Recall: {self.maximum_recall:.4f}, Precision: {self.maximum_precision:.4f} (at epoch {self.best_model_occ_epoch})")
 
             self.summary = summary
+
+        # Avoiding the stupid torchinfo changing the model device        
+        if next(self.model.parameters()).device.type != torch.device(self.device).type:
+            self.model = self.model.to(self.device)
         return "\n".join(self.summary)
