@@ -79,6 +79,8 @@ class DataPreprocessor(torch.nn.Module):
                       with later microphones only picking up part of the sound event.
                 2.2.2 Although the microphone is turned on asynchronously, some has been on for some time, 
                      so some sound events can be captured in full.
+                2.2.3 Some devices record events from the beginning to the middle of the event, 
+                and events do not always occur within 5s of the recording window.
             2.3 In order to ensure that the downstream resnet has seen different rooms and is robust to 
                 changes in the RIR of the rooms, it is possible to artificially modify the RIR according to the interval
 
