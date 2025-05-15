@@ -104,7 +104,7 @@ class AutoEncoder(nn.Module):
     def from_structure_hyper_and_checkpoint(hyper: dict, checkpoint_path: str, device):
         model = AutoEncoder.from_config(hyper, device)
 
-        checkpoint = torch.load(checkpoint_path, weights_only=True)
+        checkpoint = torch.load(checkpoint_path, weights_only=True, map_location=device)
         if isinstance(checkpoint, dict) and 'model_state_dict' in checkpoint:
             model.load_state_dict(checkpoint['model_state_dict'])
         else:
