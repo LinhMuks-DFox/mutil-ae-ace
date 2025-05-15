@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torchaudio.transforms as T
 from torch.utils.data import Dataset
+from lib.AudioSet.transform import TimeSequenceLengthFixer
 
 from src.AutoEncoder import AutoEncoder
 
@@ -77,7 +78,6 @@ class RIRWaveformToMelTransform(nn.Module):
         # 1) Resample
         self.resample = T.Resample(orig_freq, new_freq).to(device)
         # 2) Time Fix
-        from lib.AudioSet.transform import TimeSequenceLengthFixer
         self.time_fixer = TimeSequenceLengthFixer(new_freq, timefix_length, timefix_mode).to(device)
         # 3) Mel + AmplitudeToDB
         self.melspec = T.MelSpectrogram(

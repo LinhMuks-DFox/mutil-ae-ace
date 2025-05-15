@@ -3,6 +3,11 @@ from . import options
 # dataset config
 N_Classes = 50  # for esc-50
 
+N_RASPI = 2
+
+ResetRoomInterval = 10
+
+
 AudioDuration = 5  # s
 WarmpUp = 10
 MaxLossOfVisualization = 10

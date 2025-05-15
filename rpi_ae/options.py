@@ -19,7 +19,7 @@ BASE_DIR = pathlib.Path(__file__).resolve().parent.parent  # 假设你在 src/ �
 with open(BASE_DIR / "configs/dataset_info.yml", "r") as f:
     dataset_info = yaml.safe_load(f)
 
-DataSetPath = dataset_info["Dataset"]["5MICFixedESC50"]["data_path"]
+DataSetPath = dataset_info["Dataset"]["FixedESC50"]["path"]
 
 TrainSetPath = pathlib.Path(DataSetPath["root"]) / DataSetPath["train"]
 TestSetPath = pathlib.Path(DataSetPath["root"]) / DataSetPath["test"]
