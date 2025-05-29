@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import logging
 import os
 import random
@@ -96,7 +97,8 @@ class AutoEncoderTrainer:
         with torch.no_grad():
             data0, _ = self.trainset[0]
             logging.info("Feeded Data shape: %s", data0.shape)
-            model_summary = torchinfo.summary(self.model, input_data=data0.unsqueeze(0))
+            model_summary = torchinfo.summary(self.model, data0.unsqueeze(0).shape)
+            self.model.to(self.device)
             for line in str(model_summary).split('\n'):
                 logging.info(line)
 
