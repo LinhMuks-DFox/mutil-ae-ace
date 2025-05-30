@@ -13,12 +13,15 @@ class TrainFileManager:
         self.logger = logger
         self.last_optimal_validation_epoch: int = -1
         self.last_saved_epoch: int = -1
+        # Persistent executor to handle IO asynchronously
+        self._executor = ThreadPoolExecutor(max_workers=2)
 
 
     def safe_rmtree(self, path):
+        """Safely remove a directory tree, ignoring errors."""
         if os.path.exists(path):
             try:
-                shutil.rmtree(path)
+                shutil.rmtree(path, ignore_errors=True)
             except Exception as e:
                 self.logger.warning(f"Failed to remove {path}: {e}")
 
@@ -27,8 +30,8 @@ class TrainFileManager:
             return
         path = self.ctx.compose_dump_path(epoch_index)
         self.logger.info(f"Scheduling deletion for epoch {epoch_index}: {path}")
-        with ThreadPoolExecutor(max_workers=2) as executor:
-            executor.submit(self.safe_rmtree, path)
+        # Use persistent executor so that deletion happens in background
+        self._executor.submit(self.safe_rmtree, path)
 
     def update_optimal_validation_epoch(self, epoch_index: int, current_score: float, best_score: float):
         if current_score > best_score:
@@ -55,3 +58,7 @@ class TrainFileManager:
             "last_optimal_validation_epoch": self.last_optimal_validation_epoch,
             "last_saved_epoch": self.last_saved_epoch,
         }
+
+    def shutdown(self):
+        """Shutdown the internal executor to free resources."""
+        self._executor.shutdown(wait=False)
