@@ -9,7 +9,6 @@ from ..Context import TrainContext
 class MyTestCase(unittest.TestCase):
     def setUp(self):
         self.ctx = TrainContext()
-        print(self.ctx)
 
     def test_dataloader(self):
         # b0, l0 = next(iter(self.ctx.test_loader))
