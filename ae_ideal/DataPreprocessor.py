@@ -25,6 +25,7 @@ class DataPreprocessor(torch.nn.Module):
 
     def __init__(self):
         super().__init__()
+
         with open(opt.AutoEncoderHyper, "r") as f:
             hyper = yaml.safe_load(f)
             self.auto_encoder = AutoEncoder.from_structure_hyper_and_checkpoint(

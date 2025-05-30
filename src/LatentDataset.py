@@ -95,11 +95,11 @@ class RIRWaveformToMelTransform(nn.Module):
         """
         wave_3d = self.resample(wave_3d)
         wave_3d = self.time_fixer(wave_3d)
-        # if wave_3d.dim() < 3: # n_mics, wave_len
-        #     wave_3d = wave_3d.unsqueeze(1)  # => [n_mics, 1, wave_len_fixed]
         wave_3d = wave_3d.to(self.device)
         mel = self.melspec(wave_3d)  # => [n_mics, n_mels, time]
         mel_db = self.to_db(mel)
+
+        # return [batch_size, n_mics, n_mels, time] or [n_mics, n_mels, time]
         return mel_db
 
     @staticmethod

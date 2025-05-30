@@ -66,14 +66,18 @@ class AutoEncoder(nn.Module):
             ("deconv3", nn.ConvTranspose1d(n_mel // 2, n_mel, kernel_size=5, stride=1)),
         ]))
 
-
     def encode(self, x: torch.Tensor) -> torch.Tensor:
+        # input shall be [batch_size, n_mic, n_mel, time] or [n_mic, n_mel, time]
         reshape_flag = False
         batch_size, n_mic, h, w = None, None, None, None
-        if x.dim() > 3:
+        if x.dim() == 3:
             batch_size, n_mic, h, w = x.shape
             x = x.reshape(batch_size * n_mic, h, w)
             reshape_flag = True
+        elif x.dim() == 2:
+            pass
+        else:
+            raise ValueError(f"Input tensor must be 2D or 3D, but got {x.dim()}D tensor.")
         ret = self.encoder(x)
         if self.encoder_projection is None:
             flattened_shape = self.encoder_flatten(ret).shape[1]
@@ -94,9 +98,6 @@ class AutoEncoder(nn.Module):
         return x
 
     def forward(self, x, require_latent=False):
-        if x.dim() > 3:
-            batch_size, _1, h, w = x.shape
-            x = x.reshape(batch_size, h, w)
         z = self.encode(x)
         x_hat = self.decode(z)
         if x_hat.shape[-1] != x.shape[-1]:
@@ -129,10 +130,10 @@ class AutoEncoder(nn.Module):
             with torch.no_grad():
                 model.encode(dummy_input)  # 激活lazy层
         return model
-        
+
     def get_encoder(self, require_flatten=True, require_projection=True):
-        if require_projection and self.encoder_projection is None: 
-           raise RuntimeError("AutoEncode are not initialized yet; please call forward() at least once")
+        if require_projection and self.encoder_projection is None:
+            raise RuntimeError("AutoEncode are not initialized yet; please call forward() at least once")
         layers = OrderedDict()
         layers["encoder"] = self.encoder
 
@@ -144,4 +145,3 @@ class AutoEncoder(nn.Module):
             layers["projection"] = self.encoder_projection
 
         return nn.Sequential(layers)
-

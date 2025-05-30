@@ -13,8 +13,8 @@ import random
 import numpy as np
 
 from endtoend.Context import TrainContext as e2e_context
-from latent_air_propagation.Context import TrainContext as latent_air_context
-from latent_idea_classification_context.Context import TrainContext as latent_idea_classification_context
+from ae_air.Context import TrainContext as latent_air_context
+from ae_ideal.Context import TrainContext as latent_idea_classification_context
 from raw_data.Context import TrainContext as spectrogram_ideal_context
 from soundpower.Context import TrainContext as sound_power_context
 from rpi_ae.Context import TrainContext as rpi_ae_context
@@ -35,14 +35,14 @@ def make_context(experiment_type: str) -> Context:
 
 def get_hyperparameter_and_options_path(experiment_type: str) -> typing.Tuple[str, str]:
     return {
-        "ltidl": ("./latent_idea_classification_context/hyperparameters.py",
-                  "./latent_idea_classification_context/options.py"),
+        "ltidl": ("./ae_ideal/hyperparameters.py",
+                  "./ae_ideal/options.py"),
 
         "speidl": ("./raw_data/hyperparameters.py",
                    "./raw_data/options.py"),
 
-        "ltari": ("./latent_air_propagation/hyperparameters.py",
-                  "./latent_air_propagation/options.py"),
+        "ltari": ("./ae_air/hyperparameters.py",
+                  "./ae_air/options.py"),
 
         "sdp": ("./soundpower/hyperparameters.py",
                 "./soundpower/options.py"),

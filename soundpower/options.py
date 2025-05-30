@@ -13,7 +13,7 @@ SaveDirectory = f"./trained/{TrainID}-sound-power"
 Platform: str = platform.platform()
 DryRun: bool = False
 ModelDebugging: bool = True
-CompileModel = True
+CompileModel = False
 
 BASE_DIR = pathlib.Path(__file__).resolve().parent.parent  # 假设你在 src/ 目录下
 with open(BASE_DIR / "configs/dataset_info.yml", "r") as f:

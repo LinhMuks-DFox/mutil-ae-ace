@@ -133,6 +133,7 @@ class TrainContext(Context):  # 继承自 ABCContext
         生成训练摘要信息。
         """
         if self.summary_content is None:
+            self.model.eval()
             summary = ["TrainContext Summary"
                        f"Model:\n{str(torchinfo.summary(self.model, self.data_preprocessor(next(iter(self.train_loader))[0].to(self.device)).shape, verbose=0))}",
                        f"Random seed: {self.random_seed}",
@@ -169,5 +170,6 @@ class TrainContext(Context):  # 继承自 ABCContext
                 f"Recall: {self.maximum_recall:.4f}, Precision: {self.maximum_precision:.4f} (at epoch {self.best_model_occ_epoch})")
         if next(self.model.parameters()).device.type != torch.device(self.device).type:
             self.model = self.model.to(self.device)
-            self.summary = summary
+        self.model.train()
+        self.summary = summary
         return "\n".join(self.summary)
