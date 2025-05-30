@@ -135,7 +135,7 @@ class TrainContext(Context):  # 继承自 ABCContext
         """
         if self.summary_content is None:
             summary = ["TrainContext Summary",
-                       f"Model:\n{str(torchinfo.summary(self.model, next(iter(self.train_loader))[0].shape, verbose=0))}",
+                       f"Model:\n{str(torchinfo.summary(self.model, self.data_preprocessor(next(iter(self.train_loader))[0].to(self.device)).shape, verbose=0))}",
                        f"Random seed: {self.random_seed}",
                        f"Dataset sizes - Train: {len(self.train_set)}, Validate: {len(self.validate_set)}, Test: {len(self.test_set)}"]
 
