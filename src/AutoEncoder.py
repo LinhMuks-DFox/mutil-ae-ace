@@ -70,14 +70,14 @@ class AutoEncoder(nn.Module):
         # input shall be [batch_size, n_mic, n_mel, time] or [n_mic, n_mel, time]
         reshape_flag = False
         batch_size, n_mic, h, w = None, None, None, None
-        if x.dim() == 3:
+        if x.dim() == 4:
             batch_size, n_mic, h, w = x.shape
             x = x.reshape(batch_size * n_mic, h, w)
             reshape_flag = True
-        elif x.dim() == 2:
+        elif x.dim() == 3:
             pass
         else:
-            raise ValueError(f"Input tensor must be 2D or 3D, but got {x.dim()}D tensor.")
+            raise ValueError(f"Input tensor must be 3D or 4D, but got {x.dim()}D tensor.")
         ret = self.encoder(x)
         if self.encoder_projection is None:
             flattened_shape = self.encoder_flatten(ret).shape[1]
