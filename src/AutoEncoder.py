@@ -3,6 +3,7 @@ from collections import OrderedDict
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from numpy.ma.core import reshape
 
 
 class ShapeNavigator(nn.Module):
@@ -67,9 +68,12 @@ class AutoEncoder(nn.Module):
 
 
     def encode(self, x: torch.Tensor) -> torch.Tensor:
+        reshape_flag = False
+        batch_size, n_mic, h, w = None, None, None, None
         if x.dim() > 3:
-            batch_size, _1, h, w = x.shape
-            x = x.reshape(batch_size, h, w)
+            batch_size, n_mic, h, w = x.shape
+            x = x.reshape(batch_size * n_mic, h, w)
+            reshape_flag = True
         ret = self.encoder(x)
         if self.encoder_projection is None:
             flattened_shape = self.encoder_flatten(ret).shape[1]
@@ -78,6 +82,10 @@ class AutoEncoder(nn.Module):
             self.decoder_unflatten = nn.Unflatten(1, unflattened_size=ret.shape[1:])
         ret = self.encoder_flatten(ret)
         ret = self.encoder_projection(ret)
+        if reshape_flag:
+            ret = ret.reshape(batch_size, n_mic, self.latent_size)
+        if n_mic == 1:
+            ret = ret.squeeze(1) # output shape: [batch_size, latent_size]
         return ret
 
     def decode(self, z: torch.Tensor) -> torch.Tensor:

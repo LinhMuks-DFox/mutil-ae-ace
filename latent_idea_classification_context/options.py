@@ -11,9 +11,9 @@ TrainID = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 SaveDirectory = f"./trained/{TrainID}-ideal-latent"
 
 Platform: str = platform.platform()
-DryRun: bool = False
+DryRun: bool = True
 ModelDebugging: bool = True
-CompileModel = True
+CompileModel = False
 
 BASE_DIR = pathlib.Path(__file__).resolve().parent.parent  # 假设你在 src/ 目录下
 with open(BASE_DIR / "configs/dataset_info.yml", "r") as f:
