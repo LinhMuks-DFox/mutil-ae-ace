@@ -151,4 +151,5 @@ class Trainer:
         finally:
             self.navigator.conclude_this_epoch()
             self.navigator.dump_metrics()
+            self.file_manager.shutdown()
             self.logger.info(f"Train process done. last epoch data saved at {self.ctx.current_epoch} directory.")
