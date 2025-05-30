@@ -16,7 +16,7 @@ class DataTensorDataset(Dataset):
     不做任何 transform。允许后续在外部套上 BC 或其他操作。
     """
 
-    def __init__(self, data_tensor: torch.Tensor, label_tensor: torch.Tensor, device="cuda", n_cls=50):
+    def __init__(self, data_tensor: torch.Tensor, label_tensor: torch.Tensor, device="cpu", n_cls=50):
         """
         Args:
             data_tensor: shape=[N, n_mics, wave_len]
@@ -25,17 +25,17 @@ class DataTensorDataset(Dataset):
         super().__init__()
         self.data_tensor = data_tensor
         self.label_tensor = label_tensor
-        self.device = device
-        self.n_cls = 50
+        self.device = device  # kept for backward compatibility, not used
+        self.n_cls = n_cls
 
     def __len__(self):
         return len(self.data_tensor)
 
     def __getitem__(self, idx):
-        wave_3d = self.data_tensor[idx].to(self.device)  # => [n_mics, wave_len]
+        wave_3d = self.data_tensor[idx]  # => [n_mics, wave_len]
         label = self.label_tensor[idx]  # 可能是 int，也可能是 Tensor
         if isinstance(label, int) or label.ndim == 0:
-            label = torch.eye(self.n_cls, device=self.device)[label]
+            label = torch.eye(self.n_cls)[label]
         return wave_3d, label
 
     @staticmethod
@@ -43,7 +43,7 @@ class DataTensorDataset(Dataset):
         """
             split: train test validate in string
         """
-        dataset_dict = torch.load(data_tensor_path, map_location=device, weights_only=True)
+        dataset_dict = torch.load(data_tensor_path, map_location="cpu", weights_only=True)
         if split not in dataset_dict:
             raise ValueError(f"split='{split}' not found in {data_tensor_path}, available={list(dataset_dict.keys())}")
 
