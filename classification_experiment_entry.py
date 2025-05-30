@@ -9,6 +9,8 @@ import typing
 
 import torch
 import torch.amp
+import random
+import numpy as np
 
 from endtoend.Context import TrainContext as e2e_context
 from latent_air_propagation.Context import TrainContext as latent_air_context
@@ -130,6 +132,14 @@ def parse_arguments():
 if __name__ == "__main__":
     import matplotlib
     matplotlib.use('Agg')  # ✅ 添加此行，防止 Qt 插件加载错误
+    SEED = 42
+    random.seed(SEED)
+    np.random.seed(SEED)
+    torch.manual_seed(SEED)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(SEED)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
     with torch.amp.autocast(
             device_type="cuda" if torch.cuda.is_available() else "mps" if torch.mps.is_available() else "cpu",
             dtype=torch.float32):
