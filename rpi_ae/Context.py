@@ -67,7 +67,7 @@ class TrainContext(Context):  # 继承自 ABCContext
         train_set = DataTensorDataset.from_datatensor_path(
             split="train",
             data_tensor_path=opt.TrainSetPath.resolve(),
-            device=self.device,
+            device="cpu",
             n_cls=hyp.N_Classes
         )
         test_set = DataTensorDataset.from_datatensor_path(
@@ -91,9 +91,9 @@ class TrainContext(Context):  # 继承自 ABCContext
         )
 
         self.train_set = create_preprocessed_acoustic_dataset(
-            self.data_preprocessor,
+            None,
             train_set,
-            self.device,
+            "cpu",
             hyp.N_Classes,
             True
         )
