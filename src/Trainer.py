@@ -79,7 +79,7 @@ class Trainer:
         }[reduction]
         self.ctx.model.eval()
         self.ctx.tester.set_dataloader(dataset, self.ctx.n_classes)
-        result = self.ctx.tester.evaluate_model()
+        result = self.ctx.tester.evaluate_model(None if set_type != "train" else self.ctx.data_preprocessor)
         save_destination = {
             "validate": self.ctx.validate_score,
             "train": self.ctx.train_score,

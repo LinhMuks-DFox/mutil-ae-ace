@@ -84,8 +84,6 @@ class AutoEncoder(nn.Module):
         ret = self.encoder_projection(ret)
         if reshape_flag:
             ret = ret.reshape(batch_size, n_mic, self.latent_size)
-        if n_mic == 1:
-            ret = ret.squeeze(1) # output shape: [batch_size, latent_size]
         return ret
 
     def decode(self, z: torch.Tensor) -> torch.Tensor:
