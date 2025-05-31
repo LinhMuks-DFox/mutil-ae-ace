@@ -171,5 +171,5 @@ class TrainContext(Context):  # 继承自 ABCContext
                 f"Recall: {self.maximum_recall:.4f}, Precision: {self.maximum_precision:.4f} (at epoch {self.best_model_occ_epoch})")
         if next(self.model.parameters()).device.type != torch.device(self.device).type:
             self.model = self.model.to(self.device)
-            self.summary = summary
+        self.summary = summary
         return "\n".join(self.summary)
