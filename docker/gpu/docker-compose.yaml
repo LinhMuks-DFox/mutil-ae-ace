@@ -4,7 +4,7 @@ services:
       context: ../../
       dockerfile: docker/gpu/Dockerfile
       args:
-        - PY_VERSION=3.12
+        - PY_VERSION=3.11
     container_name: multi_ae_ace
     deploy:
       resources:

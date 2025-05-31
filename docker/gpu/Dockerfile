@@ -1,7 +1,7 @@
 
-FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu20.04
+FROM nvidia/cuda:12.6.1-cudnn-devel-ubuntu20.04
 
-ARG PY_VERSION=3.12
+ARG PY_VERSION=3.11
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -34,7 +34,8 @@ RUN ln -sf /usr/bin/python${PY_VERSION} /usr/bin/python \
 RUN pip install nvitop
 ENV PATH="/root/.local/bin:$PATH"
 COPY requirements.txt ./
-RUN pip install -r requirements.txt
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install --no-cache-dir -r requirements.txt
 WORKDIR /workspace
 COPY .. /workspace
 CMD ["bash"]
