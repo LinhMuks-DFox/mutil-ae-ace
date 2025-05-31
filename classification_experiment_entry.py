@@ -107,6 +107,7 @@ def main():
     make_dump_path(context)
     print("Configuring logger...")
     config_logger(context)
+    logging.info("Random seed: ", args.seed)
     train_app = make_trainer(context, get_hyperparameter_and_options_path(experiment_type),
                              only_keep_best_epoch=args.only_keep_best_epoch)
     train_app.main()
