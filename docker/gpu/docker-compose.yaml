@@ -2,7 +2,7 @@ services:
   multi_ae_ace:
     build:
       context: ../../
-      dockerfile: Dockerfile
+      dockerfile: docker/gpu/Dockerfile
       args:
         - PY_VERSION=3.12
     container_name: multi_ae_ace
