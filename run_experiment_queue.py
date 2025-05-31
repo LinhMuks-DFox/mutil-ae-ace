@@ -31,6 +31,8 @@ def parse_args():
                         help="Use nohup when launching each experiment")
     parser.add_argument("--google-drive-path", type=str, default=None,
                         help="Copy experiment results to this path after each run")
+    parser.add_argument("--seed", type=int, default=42,
+                        help="Random seed to pass to classification_experiment_entry")
     return parser.parse_args()
 
 
@@ -55,6 +57,8 @@ def main():
             cmd.append("--profiling")
         if args.only_keep_best_epoch:
             cmd.append("-okbe")
+        if args.seed is not None:
+            cmd.extend(["--seed", str(args.seed)])
 
         if args.nohup:
             log = f"nohup_{exp}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"

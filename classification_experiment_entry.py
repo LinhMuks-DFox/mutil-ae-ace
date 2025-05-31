@@ -126,13 +126,15 @@ def parse_arguments():
                         help="Specify the experiment type.")
     parser.add_argument("-p", "--profiling", action="store_true", default=False, help="Run script with torch profile")
     parser.add_argument("-okbe", "--only-keep-best-epoch", action="store_true", default=False, help="只保留最好的epoch")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility")
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     import matplotlib
     matplotlib.use('Agg')  # ✅ 添加此行，防止 Qt 插件加载错误
-    SEED = 42
+    args = parse_arguments()
+    SEED = args.seed
     random.seed(SEED)
     np.random.seed(SEED)
     torch.manual_seed(SEED)
@@ -144,4 +146,4 @@ if __name__ == "__main__":
             device_type="cuda" if torch.cuda.is_available() else "mps" if torch.mps.is_available() else "cpu",
             dtype=torch.float32):
         torch.set_float32_matmul_precision('high')
-        profiling_main() if parse_arguments().profiling else main()
+        profiling_main() if args.profiling else main()
