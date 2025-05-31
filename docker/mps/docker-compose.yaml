@@ -1,0 +1,18 @@
+services:
+  multi_ae_ace_mps:
+    # 更改服务名称和容器名称以区分
+    build:
+      context: ../../ # 相对于 docker/mps/ 目录，指向项目根目录
+      dockerfile: Dockerfile # 项目根目录下的 Dockerfile
+      args:
+        - PY_VERSION=3.12
+    container_name: multi_ae_ace_mps
+    # deploy.resources.reservations.devices 通常用于NVIDIA GPU。
+    # 对于MPS，Docker Desktop for Mac 会自动处理兼容的Apple Silicon Mac上的MPS访问。
+    # 确保你的Dockerfile构建的镜像包含了支持MPS的PyTorch版本。
+    # environment 中移除了NVIDIA相关的环境变量
+    volumes:
+      - ../../:/workspace # 将项目根目录挂载到容器的 /workspace
+      - ~/.bashrc:/root/.bashrc # 挂载主机的 .bashrc
+      # - ./data/: "<container_dataset>" # 如果需要挂载数据，请取消注释并配置
+    tty: true

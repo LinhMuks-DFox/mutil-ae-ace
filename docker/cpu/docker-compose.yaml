@@ -1,0 +1,16 @@
+services:
+  multi_ae_ace_cpu:
+    # 更改服务名称和容器名称以区分
+    build:
+      context: ../../ # 相对于 docker/cpu/ 目录，指向项目根目录
+      dockerfile: Dockerfile # 项目根目录下的 Dockerfile
+      args:
+        - PY_VERSION=3.12
+    container_name: multi_ae_ace_cpu
+    # deploy 字段通常用于GPU资源分配，CPU不需要
+    # environment 中移除了NVIDIA相关的环境变量
+    volumes:
+      - ../../:/workspace # 将项目根目录挂载到容器的 /workspace
+      - ~/.bashrc:/root/.bashrc # 挂载主机的 .bashrc
+      # - ./data/: "<container_dataset>" # 如果需要挂载数据，请取消注释并配置
+    tty: true

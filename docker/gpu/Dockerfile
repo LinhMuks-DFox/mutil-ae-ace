@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y \
     clangd \
     clang-format \
     tzdata \
-    software-properties-common \
+    software-properties-common 
 
 RUN add-apt-repository ppa:deadsnakes/ppa && apt-get update && apt-get install -y \
     python${PY_VERSION} \
@@ -33,6 +33,7 @@ RUN ln -sf /usr/bin/python${PY_VERSION} /usr/bin/python \
     && ln -sf /usr/bin/pip3 /usr/bin/pip
 RUN pip install nvitop
 ENV PATH="/root/.local/bin:$PATH"
+COPY requirements.txt ./
 RUN pip install -r requirements.txt
 WORKDIR /workspace
 COPY .. /workspace
