@@ -78,7 +78,7 @@ class RIRWaveformToMelTransform(nn.Module):
         # 1) Resample
         self.resample = T.Resample(orig_freq, new_freq).to(device)
         # 2) Time Fix
-        self.time_fixer = TimeSequenceLengthFixer(new_freq, timefix_length, timefix_mode).to(device)
+        self.time_fixer = TimeSequenceLengthFixer(timefix_length, new_freq, timefix_mode).to(device)
         # 3) Mel + AmplitudeToDB
         self.melspec = T.MelSpectrogram(
             sample_rate=mel_sample_rate,
