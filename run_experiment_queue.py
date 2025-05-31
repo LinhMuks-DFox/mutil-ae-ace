@@ -35,7 +35,7 @@ def run_command(cmd, log_file=None):
 def main():
     args = parse_args()
     for exp in args.queue:
-        cmd = ["python", "-u", ENTRY, "-E", exp]
+        cmd = ["python3", "-u", ENTRY, "-E", exp]
         if args.profiling:
             cmd.append("--profiling")
         if args.only_keep_best_epoch:
