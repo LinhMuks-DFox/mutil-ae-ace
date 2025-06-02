@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torchaudio.transforms as T
 from torch.utils.data import Dataset
-from lib.AudioSet.transform import TimeSequenceLengthFixer
+from lib.MuxkitTools.audio_tools.transforms import TimeSequenceLengthFixer
 
 from src.AutoEncoder import AutoEncoder
 
