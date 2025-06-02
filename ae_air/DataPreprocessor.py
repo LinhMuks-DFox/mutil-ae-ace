@@ -14,12 +14,14 @@ class AdjustForResNet(torch.nn.Module):
 
     @torch.no_grad()
     def forward(self, x: torch.Tensor):
-        if x.dim() >= 3:
+        if x.dim() == 3:
             batch, n_mic, nyquis_times_5_times_4led = x.shape
             x = x.reshape(batch, 1, n_mic * 4, nyquis_times_5_times_4led // 4).contiguous()
         elif x.dim() == 2:
             n_mic, nyquis_times_5_times_4led = x.shape
             x = x.reshape(1, n_mic * 4, nyquis_times_5_times_4led // 4).contiguous()
+        else:
+            raise ValueError(f"Unsupported input shape: {x.shape}. Expected 2D or 3D tensor.")
         return x
 
 
