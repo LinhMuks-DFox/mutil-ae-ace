@@ -12,7 +12,7 @@ TrainID = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
 SaveDirectory = f"./trained/{TrainID}-End-2-end"
 
 Platform: str = platform.platform()
-DryRun: bool = True
+DryRun: bool = False
 ModelDebugging: bool = True
 CompileModel = False
 

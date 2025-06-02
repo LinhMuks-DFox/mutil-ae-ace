@@ -200,3 +200,4 @@ vendor/
 compile_commands.json
 *.npy
 *.wav
+temp*/
