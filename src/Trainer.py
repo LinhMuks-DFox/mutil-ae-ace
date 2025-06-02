@@ -29,7 +29,7 @@ class Trainer:
         self.logger.info(f"Model selection be be performed base on {self.best_model_elect_score}")
 
     def one_step_loss(self, data: TensorType, label: TensorType):
-        data = self.ctx.data_preprocessor(data.to(self.ctx.device))
+        # data = self.ctx.data_preprocessor(data.to(self.ctx.device))
         label = label.to(self.ctx.device)
         predicted = self.ctx.model(data)
         loss = self.ctx.loss_function(predicted, label)

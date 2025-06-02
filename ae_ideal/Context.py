@@ -89,7 +89,7 @@ class TrainContext(Context):  # 继承自 ABCContext
         )
 
         self.train_set = create_preprocessed_acoustic_dataset(
-            None,
+            self.data_preprocessor,
             train_set,
             "cpu",
             hyp.N_Classes,
