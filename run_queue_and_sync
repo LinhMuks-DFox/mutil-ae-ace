@@ -1,15 +1,17 @@
 #!/bin/bash
 
-LOCAL_BASE_STAGING_DIR="./temp1" # 你可以根据需要修改这个路径
+EXPERIMENT_PURPOSE="std0_bias0_1" # <--- 你的新增变量
+LOCAL_BASE_STAGING_DIR="./temp1" # <--- 你修改的本地暂存目录名
 
-GDRIVE_TARGET_BASE_PATH="google-drive:auto_sync" # 这是你在rclone中配置的远程名加上路径
+GDRIVE_TARGET_BASE_PATH="google-drive:auto_sync/${EXPERIMENT_PURPOSE}" 
 
 mkdir -p "${LOCAL_BASE_STAGING_DIR}"
 
 for seed in 3047 114514 666 65536 4999; do
     echo "======================================================"
-    echo "🌱 Running experiment for seed: ${seed}"
+    echo "🌱 Running experiment for seed: ${seed} (Purpose: ${EXPERIMENT_PURPOSE})" # 可以在日志中加入目的
     echo "======================================================"
+
     CURRENT_SEED_LOCAL_OUTPUT_DIR="${LOCAL_BASE_STAGING_DIR}/seed_${seed}_outputs"
     mkdir -p "${CURRENT_SEED_LOCAL_OUTPUT_DIR}"
     echo "Local staging directory for this seed: ${CURRENT_SEED_LOCAL_OUTPUT_DIR}"
@@ -42,8 +44,9 @@ for seed in 3047 114514 666 65536 4999; do
     echo ""
 done
 
-echo "🎉 All experiments in the loop have been processed."
+echo "🎉 All experiments in the loop for purpose '${EXPERIMENT_PURPOSE}' have been processed."
 
+# 自动删除本地的中转基础输出目录
 if [ -d "${LOCAL_BASE_STAGING_DIR}" ]; then
     echo "🗑️ Automatically deleting the local staging directory: ${LOCAL_BASE_STAGING_DIR}"
     rm -rf "${LOCAL_BASE_STAGING_DIR}"
