@@ -41,5 +41,5 @@ RUN python -m ensurepip --upgrade && \
 RUN python -m pip install --no-cache-dir -r requirements.txt
 #COPY .. /workspace
 RUN curl https://rclone.org/install.sh | bash
-#WORKDIR /workspace
+WORKDIR /workspace
 CMD ["bash"]
