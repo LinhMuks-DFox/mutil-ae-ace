@@ -1,18 +1,18 @@
 #!/bin/bash
 
-EXPERIMENT_PURPOSE="std0_bias0_1" # <--- 你的新增变量
-LOCAL_BASE_STAGING_DIR="./temp1" # <--- 你修改的本地暂存目录名
-
-GDRIVE_TARGET_BASE_PATH="google-drive:auto_sync/${EXPERIMENT_PURPOSE}" 
+EXPERIMENT_PURPOSE="std0_bias0_1"             # 新增变量，实验用途
+LOCAL_BASE_STAGING_DIR="./temp1"              # 本地暂存目录
+GDRIVE_TARGET_BASE_PATH="google-drive:auto_sync/${EXPERIMENT_PURPOSE}"
 
 mkdir -p "${LOCAL_BASE_STAGING_DIR}"
 
-for seed in 3047 114514 666 65536 4999; do
+for seed in 3047 114514 65536 4999; do
     echo "======================================================"
-    echo "🌱 Running experiment for seed: ${seed} (Purpose: ${EXPERIMENT_PURPOSE})" # 可以在日志中加入目的
+    echo "🌱 Running experiment for seed: ${seed} (Purpose: ${EXPERIMENT_PURPOSE})"
     echo "======================================================"
 
-    CURRENT_SEED_LOCAL_OUTPUT_DIR="${LOCAL_BASE_STAGING_DIR}/seed_${seed}_outputs"
+    # 将输出放在 experiment_seed_<seed> 目录内，便于保持远端结构一致
+    CURRENT_SEED_LOCAL_OUTPUT_DIR="${LOCAL_BASE_STAGING_DIR}/experiment_seed_${seed}"
     mkdir -p "${CURRENT_SEED_LOCAL_OUTPUT_DIR}"
     echo "Local staging directory for this seed: ${CURRENT_SEED_LOCAL_OUTPUT_DIR}"
 
@@ -27,34 +27,32 @@ for seed in 3047 114514 666 65536 4999; do
 
     if [ ${script_exit_code} -eq 0 ]; then
         echo "✅ Experiment for seed ${seed} completed successfully."
-        GDRIVE_SEED_TARGET_PATH="${GDRIVE_TARGET_BASE_PATH}/experiment_seed_${seed}"
-        echo "☁️ Syncing results from ${CURRENT_SEED_LOCAL_OUTPUT_DIR} to ${GDRIVE_SEED_TARGET_PATH}"
-
-        rclone sync "${CURRENT_SEED_LOCAL_OUTPUT_DIR}" "${GDRIVE_SEED_TARGET_PATH}" --progress
-        
-        if [ $? -eq 0 ]; then
-            echo "👍 Sync for seed ${seed} to Google Drive completed successfully."
-        else
-            echo "⚠️ Sync for seed ${seed} to Google Drive failed."
-        fi
     else
-        echo "❌ Experiment for seed ${seed} failed with exit code ${script_exit_code}. Skipping sync."
+        echo "❌ Experiment for seed ${seed} failed with exit code ${script_exit_code}."
     fi
     echo "------------------------------------------------------"
     echo ""
 done
 
-echo "🎉 All experiments in the loop for purpose '${EXPERIMENT_PURPOSE}' have been processed."
+echo "☁️ Syncing ALL results in ${LOCAL_BASE_STAGING_DIR} to ${GDRIVE_TARGET_BASE_PATH}"
+rclone sync "${LOCAL_BASE_STAGING_DIR}" "${GDRIVE_TARGET_BASE_PATH}" --progress
+sync_exit_code=$?
 
-# 自动删除本地的中转基础输出目录
-if [ -d "${LOCAL_BASE_STAGING_DIR}" ]; then
-    echo "🗑️ Automatically deleting the local staging directory: ${LOCAL_BASE_STAGING_DIR}"
-    rm -rf "${LOCAL_BASE_STAGING_DIR}"
-    if [ $? -eq 0 ]; then
-        echo "✅ Local staging directory ${LOCAL_BASE_STAGING_DIR} deleted successfully."
-    else
-        echo "⚠️ Failed to delete local staging directory ${LOCAL_BASE_STAGING_DIR}."
+if [ ${sync_exit_code} -eq 0 ]; then
+    echo "👍 Global sync completed successfully."
+
+    # 同步成功后删除本地暂存目录
+    if [ -d "${LOCAL_BASE_STAGING_DIR}" ]; then
+        echo "🗑️ Deleting local staging directory: ${LOCAL_BASE_STAGING_DIR}"
+        rm -rf "${LOCAL_BASE_STAGING_DIR}"
+        if [ $? -eq 0 ]; then
+            echo "✅ Local staging directory deleted successfully."
+        else
+            echo "⚠️ Failed to delete local staging directory."
+        fi
     fi
 else
-    echo "ℹ️ Local staging directory ${LOCAL_BASE_STAGING_DIR} not found or is not a directory, skipping deletion."
+    echo "⚠️ Global sync failed. Local files are kept at ${LOCAL_BASE_STAGING_DIR} for inspection."
 fi
+
+echo "🎉 All experiments for purpose '${EXPERIMENT_PURPOSE}' have been processed."
