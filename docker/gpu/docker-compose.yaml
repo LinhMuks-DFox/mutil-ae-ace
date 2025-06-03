@@ -1,5 +1,6 @@
 services:
   multi_ae_ace:
+    working_dir: /workspace
     build:
       context: ../../
       dockerfile: docker/gpu/Dockerfile
