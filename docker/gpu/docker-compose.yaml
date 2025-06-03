@@ -18,5 +18,6 @@ services:
       - NVIDIA_DRIVER_CAPABILITIES=compute,utility
     volumes:
       - ../../:/workspace
-      # - ./data/: "<container_dataset>"
+      - ../../data:/workspace/data
+      - ~/.config/rclone/rclone.conf:/root/.config/rclone/rclone.conf:ro
     tty: true

@@ -39,6 +39,7 @@ COPY requirements.txt ./
 RUN python -m ensurepip --upgrade && \
     python -m pip install --upgrade pip setuptools wheel
 RUN python -m pip install --no-cache-dir -r requirements.txt
-WORKDIR /workspace
-COPY .. /workspace
+#COPY .. /workspace
+RUN curl https://rclone.org/install.sh | bash
+#WORKDIR /workspace
 CMD ["bash"]
