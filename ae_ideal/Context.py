@@ -38,23 +38,19 @@ class TrainContext(Context):  # 继承自 ABCContext
             self.unserialize(serial)
 
     def initialize_model(self):
-        # 使用 ResNet 初始化模型
         self.model: torch.nn.Module = make_model(hyp.ResNet, n_cls=hyp.N_Classes).to(self.device)
         if self.compile_model and self.model is not None:
             self.model = torch.compile(self.model)
 
     def initialize_loss(self):
-        # 使用交叉熵损失函数
         self.loss_function: torch.nn.Module = SoftmaxLogKLDivLoss()
 
     def initialize_optimizer(self):
-        # 初始化 Adam 优化器
         self.optimizer: optimize.Optimizer = optimize.Adam(
             self.model.parameters(), lr=hyp.LearningRate, weight_decay=hyp.WeightDecay
         )
 
     def initialize_scheduler(self):
-        # 使用 CosineAnnealingWarmRestarts 作为调度器
         self.scheduler: optimize.lr_scheduler.LRScheduler = WarpedReduceLROnPlateau(
             self.optimizer, mode=hyp.ReduceLROnPlateauMode,
             factor=hyp.ReduceLROnPlateauFactor,
@@ -67,7 +63,7 @@ class TrainContext(Context):  # 继承自 ABCContext
         train_set = DataTensorDataset.from_datatensor_path(
             split="train",
             data_tensor_path=opt.TrainSetPath.resolve(),
-            device="cpu",
+            device=self.device,
             n_cls=hyp.N_Classes
         )
         test_set = DataTensorDataset.from_datatensor_path(
@@ -91,7 +87,7 @@ class TrainContext(Context):  # 继承自 ABCContext
         self.train_set = create_preprocessed_acoustic_dataset(
             self.data_preprocessor,
             train_set,
-            "cpu",
+            self.device,
             hyp.N_Classes,
             True
         )
@@ -118,7 +114,6 @@ class TrainContext(Context):  # 继承自 ABCContext
         self.test_loader = tch_data.DataLoader(self.test_set, shuffle=False, batch_size=hyp.BatchSize)
 
     def initialize_tester(self):
-        # 初始化测试器
         self.tester = MonoLabelClassificationTester(self.model, self.device, self.loss_function)
 
     def init_other(self):
@@ -126,29 +121,22 @@ class TrainContext(Context):  # 继承自 ABCContext
         self.train_set_test_mile_stones = hyp.TrainSetTestMileStone
 
     def initialize_loss_trackers(self):
-        # 初始化损失跟踪器
         self.validate_loss = torch.empty(0).to(self.device)
         self.train_loss = torch.empty(0).to(self.device)
 
     def summary(self):
-        """
-        生成训练摘要信息。
-        """
         if self.summary_content is None:
             summary = ["TrainContext Summary",
-                       f"Model:\n{str(torchinfo.summary(self.model, self.data_preprocessor(next(iter(self.train_loader))[0].to(self.device)).shape, verbose=0))}",
+                       # f"Model:\n{str(torchinfo.summary(self.model, self.data_preprocessor(next(iter(self.train_loader))[0].to(self.device)).shape, verbose=0))}",
+                       f"Model:\n{str(torchinfo.summary(self.model, next(iter(self.train_loader))[0].to(self.device).shape, verbose=0))}",
                        f"Random seed: {self.random_seed}",
                        f"Dataset sizes - Train: {len(self.train_set)}, Validate: {len(self.validate_set)}, Test: {len(self.test_set)}"]
 
-            # 数据集信息
-
-            # 数据输入输出形状
             d0, l0 = self.train_set[0]
             bd0, bl0 = next(iter(self.train_loader))
             summary.append(f"Input data shape: {d0.shape}, batch shape: {bd0.shape}")
             summary.append(f"Label shape: {l0.shape}, batch shape: {bl0.shape}")
 
-            # 模型统计信息
             model_stats = stati_model(self.model, unit="mb")
             summary += [
                 f'model_param_count_with_grad: {model_stats["param_count_with_grad"]}',
@@ -156,16 +144,13 @@ class TrainContext(Context):  # 继承自 ABCContext
                 f'model_size_mb: {model_stats["model_size"]}',
             ]
 
-            # 训练参数
             summary.append(f"Training parameters - Batch size: {hyp.BatchSize}, Learning rate: {hyp.LearningRate}, "
                            f"Weight decay: {hyp.WeightDecay}, Scheduler: {self.scheduler.__class__.__name__}")
             summary.append(
                 f"Loss function: {self.loss_function.__class__.__name__}"
             )
-            # 训练进度
             summary.append(f"Training progress - Current epoch: {self.current_epoch}/{self.epochs}")
 
-            # 记录的性能指标
             summary.append(
                 f"Best metrics so far - F1 Score: {self.maximum_f1_score:.4f}, Accuracy: {self.maximum_accuracy:.4f}, "
                 f"Recall: {self.maximum_recall:.4f}, Precision: {self.maximum_precision:.4f} (at epoch {self.best_model_occ_epoch})")

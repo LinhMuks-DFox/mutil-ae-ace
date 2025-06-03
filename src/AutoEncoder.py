@@ -77,7 +77,7 @@ class AutoEncoder(nn.Module):
         elif x.dim() == 3:
             pass
         else:
-            raise ValueError(f"Input tensor must be 3D or 4D, but got {x.dim()}D tensor.")
+            raise ValueError(f"Input tensor must be 3D or 4D, but got {x.dim()}D tensor, in a shape of {x.shape}.")
         ret = self.encoder(x)
         if self.encoder_projection is None:
             flattened_shape = self.encoder_flatten(ret).shape[1]

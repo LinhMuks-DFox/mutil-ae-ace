@@ -23,7 +23,7 @@ SchedulerParameter = {
 
 # Train parameters
 Epochs = 500 if not options.DryRun else 3
-BatchSize = 100 if not options.DryRun else 100
+BatchSize = 256 if not options.DryRun else 100
 TrainSetTestMileStone = [
     i for i in range(Epochs) if i % 20 == 0 and i != 0
 ]
