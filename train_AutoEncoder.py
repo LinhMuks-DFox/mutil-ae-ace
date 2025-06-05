@@ -91,13 +91,19 @@ class AutoEncoderTrainer:
         self.trainset = mk_cachedata.CacheableDataset(trainset, **self.hyper_parameter["CacheableDataset"])
         self.validate_set = mk_cachedata.CacheableDataset(self.validate_set, **self.hyper_parameter["CacheableDataset"])
         self.test_set = mk_cachedata.CacheableDataset(self.test_set, **self.hyper_parameter["CacheableDataset"])
-
+        
+        self.batch_size = self.hyper_parameter["TrainProcessControl"]["BatchSize"]
+        self.epochs = self.hyper_parameter["TrainProcessControl"]["Epoch"]
+        self.val_interval = self.hyper_parameter["TrainProcessControl"].get("val_interval", 1)
+        self.save_interval = self.hyper_parameter["TrainProcessControl"].get("save_interval", 5)
+        self.train_loader = DataLoader(self.trainset, batch_size=self.batch_size, shuffle=True)
+        self.val_loader = DataLoader(self.validate_set, batch_size=self.batch_size)
         # 初始化AutoEncoder模型
         self.model = AutoEncoder.AutoEncoder(**self.hyper_parameter["AutoEncoder"]).to(self.device)
         with torch.no_grad():
-            data0, _ = self.trainset[0]
+            data0, _ = next(iter(self.train_loader))
             logging.info("Feeded Data shape: %s", data0.shape)
-            model_summary = torchinfo.summary(self.model, data0.unsqueeze(0).shape)
+            model_summary = torchinfo.summary(self.model, data0.shape)
             self.model.to(self.device)
             for line in str(model_summary).split('\n'):
                 logging.info(line)
@@ -120,15 +126,6 @@ class AutoEncoderTrainer:
         self.validate_losses = []
         self.lr_list = []
 
-        # 训练超参
-        self.batch_size = self.hyper_parameter["TrainProcessControl"]["BatchSize"]
-        self.epochs = self.hyper_parameter["TrainProcessControl"]["Epoch"]
-        self.val_interval = self.hyper_parameter["TrainProcessControl"].get("val_interval", 1)
-        self.save_interval = self.hyper_parameter["TrainProcessControl"].get("save_interval", 5)
-
-        # 数据加载器
-        self.train_loader = DataLoader(self.trainset, batch_size=self.batch_size, shuffle=True)
-        self.val_loader = DataLoader(self.validate_set, batch_size=self.batch_size)
 
     @torch.no_grad()
     def data_preprocess(self, x: torch.Tensor) -> torch.Tensor:
@@ -136,18 +133,15 @@ class AutoEncoderTrainer:
         return self.pipeline(x)
 
     def one_step_loss(self, x, x_hat):
-        """计算单次前向传播的loss。兼容多维数据"""
         if x.dim() > 3:
             batch_size, _, h, w = x.shape
             x = x.reshape(batch_size, h, w)
         return self.loss_function(x, x_hat)
 
     def one_epoch_train(self):
-        """单个Epoch的训练流程。"""
         epoch_losses = []
         for batch_data, _ in tqdm.tqdm(self.train_loader):
             batch_data = batch_data.to(self.device)
-
             self.optimizer.zero_grad()
             x_hat = self.model(batch_data)
             loss = self.one_step_loss(batch_data, x_hat)
@@ -159,7 +153,6 @@ class AutoEncoderTrainer:
 
     @torch.no_grad()
     def validate(self):
-        """验证流程，返回本次验证Loss均值。"""
         self.model.eval()
         val_epoch_losses = []
         for batch_data, _ in tqdm.tqdm(self.val_loader):
@@ -172,7 +165,6 @@ class AutoEncoderTrainer:
         return mean_val_loss
 
     def save_checkpoint(self, epoch=None):
-        """保存模型checkpoint，同时保存训练过程中的loss、验证loss和学习率数据到独立子文件夹中。"""
         os.makedirs(os.path.join(self.run_dir, "checkpoints"), exist_ok=True)
         filename = f"epoch_{epoch}" if epoch is not None else "final"
         filename += ".pt"
@@ -190,7 +182,6 @@ class AutoEncoderTrainer:
         logging.info("[✓] Checkpoint saved: %s", save_path)
 
     def plot_losses(self, save_path="loss_curve.png"):
-        """绘制训练和验证Loss曲线。"""
         plt.figure(figsize=(10, 5))
         plt.plot(self.train_losses, label="Train Loss")
         # 验证曲线：间隔self.val_interval记录一次
@@ -206,7 +197,6 @@ class AutoEncoderTrainer:
         logging.info("[✓] Loss curve saved to %s", os.path.join(self.run_dir, save_path))
 
     def plot_learning_rate(self, save_path="lr_curve.png"):
-        """绘制学习率变化曲线。"""
         plt.figure(figsize=(10, 5))
         plt.plot(self.lr_list, label="Learning Rate")
         plt.xlabel("Epoch")
@@ -220,7 +210,6 @@ class AutoEncoderTrainer:
 
     @torch.no_grad()
     def show_reconstruction(self, dataset, save_path="reconstruction.png"):
-        """随机选取一个样本进行前向重建并可视化对比。"""
         self.model.eval()
         sample_idx = random.randint(0, len(dataset) - 1)
         data, _ = dataset[sample_idx]  # 注意dataset返回的是 (data, label)
@@ -243,7 +232,6 @@ class AutoEncoderTrainer:
         logging.info("[✓] Reconstruction plot saved to %s", os.path.join(self.run_dir, save_path))
 
     def send_mail(self, subject, body):
-        """发送简单的通知邮件。"""
         try:
             msg = EmailMessage()
             msg["Subject"] = subject
@@ -260,7 +248,6 @@ class AutoEncoderTrainer:
             logging.warning("[!] Failed to send notification email: %s", e)
 
     def run(self):
-        """执行整个训练流程。包括训练、验证、可视化和邮件通知等。"""
         try:
             for epoch in range(self.epochs):
                 # 记录当前学习率

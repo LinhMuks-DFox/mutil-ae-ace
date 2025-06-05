@@ -43,7 +43,7 @@ class AutoEncoder(nn.Module):
         self.n_mel = n_mel
         self.latent_size = latent_size
         self.feature_len = None  # set after first forward
-        self.noise_std = self.noise_std
+        self.noise_std = noise_std
         self.encoder = nn.Sequential(OrderedDict([
             ("conv1", nn.Conv1d(n_mel, n_mel // 2, kernel_size=5, stride=1)),
             ("relu1", nn.ReLU()),
@@ -92,6 +92,14 @@ class AutoEncoder(nn.Module):
 
     def decode(self, z: torch.Tensor) -> torch.Tensor:
         assert self.decoder_input_linear is not None and self.decoder_unflatten is not None, "Uninitializd layer"
+        if z.dim() == 3:
+            batch_size, _1, _latent_length_300 = z.shape
+            z = z.reshape(batch_size, _latent_length_300).contiguous()
+        elif z.dim() == 2:
+            _1, _latent_length_300 = z.shape
+            z = z.reshape(_latent_length_300).contiguous()
+        else:
+            raise ValueError("Input of decode should be 2D or 3D, [batch_size, _1, _latent_size] or [_1, _latent_size]")
         z = self.decoder_input_linear(z)
         z = self.decoder_unflatten(z)
         x = self.decoder_post(z)
