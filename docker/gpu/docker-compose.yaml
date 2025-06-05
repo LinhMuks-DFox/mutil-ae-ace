@@ -20,5 +20,7 @@ services:
     volumes:
       - ../../:/workspace
       - ../../data:/workspace/data
+      - ~/DataSets/AudioSet/train/segments:/workspace/data/audioset/train
+      - ~/DataSets/AudioSet/eval/segments:/workspace/data/audioset/eval
       - ~/.config/rclone/rclone.conf:/root/.config/rclone/rclone.conf:ro
     tty: true
