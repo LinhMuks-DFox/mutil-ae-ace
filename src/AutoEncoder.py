@@ -38,12 +38,12 @@ class SelfAttention(nn.Module):
 
 
 class AutoEncoder(nn.Module):
-    def __init__(self, n_mel: int = 80, latent_size: int = 128, num_heads: int = 2):
+    def __init__(self, n_mel: int = 80, latent_size: int = 128, num_heads: int = 2, noise_std:float=0.1, AutoEncoderInitDummyInput=[0,0,0]):
         super(AutoEncoder, self).__init__()
         self.n_mel = n_mel
         self.latent_size = latent_size
         self.feature_len = None  # set after first forward
-
+        self.noise_std = self.noise_std
         self.encoder = nn.Sequential(OrderedDict([
             ("conv1", nn.Conv1d(n_mel, n_mel // 2, kernel_size=5, stride=1)),
             ("relu1", nn.ReLU()),
@@ -99,7 +99,8 @@ class AutoEncoder(nn.Module):
 
     def forward(self, x, require_latent=False):
         z = self.encode(x)
-        x_hat = self.decode(z)
+        noised_z = z + torch.rand_like(z).to(z.device) * self.noise_std
+        x_hat = self.decode(noised_z)
         if x_hat.shape[-1] != x.shape[-1]:
             x_hat = F.interpolate(x_hat, size=x.shape[-1], mode='linear', align_corners=False)
 

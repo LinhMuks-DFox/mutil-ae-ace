@@ -35,6 +35,7 @@ AutoEncoder:
   num_heads: 2
   AutoEncoderInitDummyInput:
     shape: [1, 80, 501]
+  noise_std: 0.1
 DatasetInfo:
   duration: 10 # s
 CacheableDataset:
