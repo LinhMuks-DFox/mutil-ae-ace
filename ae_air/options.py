@@ -26,4 +26,4 @@ TestSetPath = pathlib.Path(DataSetPath["root"]) / DataSetPath["test"]
 ValidatePath = pathlib.Path(DataSetPath["root"]) / DataSetPath["validate"]
 
 AutoEncoderHyper = pathlib.Path(BASE_DIR / "configs/auto_encoder_hyperpara.yml")
-AutoEncoderCheckPoint = pathlib.Path(BASE_DIR / "autoencoder_checkpoint/run_20250413_155634/checkpoints/epoch_300.pt")
+AutoEncoderCheckPoint = pathlib.Path(BASE_DIR / "autoencoder_checkpoint/run_20250605_104948/checkpoints/epoch_290.pt")
