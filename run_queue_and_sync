@@ -1,39 +1,58 @@
 #!/bin/bash
 
-EXPERIMENT_PURPOSE="std0_bias0_1"             # 新增变量，实验用途
-LOCAL_BASE_STAGING_DIR="./temp1"              # 本地暂存目录
+EXPERIMENT_PURPOSE="std_005_bias_01_new_autoencoder"
+LOCAL_BASE_STAGING_DIR="./temp1"
 GDRIVE_TARGET_BASE_PATH="google-drive:auto_sync/${EXPERIMENT_PURPOSE}"
+MAX_JOBS=2  # 新增变量，控制最大并行任务数
 
 mkdir -p "${LOCAL_BASE_STAGING_DIR}"
 
-for seed in 3047 114514 65536 4999; do
-    echo "======================================================"
-    echo "🌱 Running experiment for seed: ${seed} (Purpose: ${EXPERIMENT_PURPOSE})"
-    echo "======================================================"
+# 待处理的 seed 列表
+SEEDS=(3047 114514 65536 4999)
 
-    # 将输出放在 experiment_seed_<seed> 目录内，便于保持远端结构一致
-    CURRENT_SEED_LOCAL_OUTPUT_DIR="${LOCAL_BASE_STAGING_DIR}/experiment_seed_${seed}"
-    mkdir -p "${CURRENT_SEED_LOCAL_OUTPUT_DIR}"
-    echo "Local staging directory for this seed: ${CURRENT_SEED_LOCAL_OUTPUT_DIR}"
+# 遍历所有 seed，启动后台任务
+for seed in "${SEEDS[@]}"; do
+    # 使用子 shell (...) & 将每个循环的任务作为一个整体在后台运行
+    (
+        echo "======================================================"
+        echo "🌱 Starting experiment for seed: ${seed} (Purpose: ${EXPERIMENT_PURPOSE})"
+        echo "======================================================"
 
-    echo "Starting Python experiment script..."
-    ./run_experiment_queue.py \
-        -okbe \
-        --nohup \
-        --queue sdp ltidl ltari e2e \
-        --seed "$seed" \
-        --google-drive-path "${CURRENT_SEED_LOCAL_OUTPUT_DIR}"
-    script_exit_code=$?
+        CURRENT_SEED_LOCAL_OUTPUT_DIR="${LOCAL_BASE_STAGING_DIR}/experiment_seed_${seed}"
+        mkdir -p "${CURRENT_SEED_LOCAL_OUTPUT_DIR}"
+        echo "Local staging directory for seed ${seed}: ${CURRENT_SEED_LOCAL_OUTPUT_DIR}"
 
-    if [ ${script_exit_code} -eq 0 ]; then
-        echo "✅ Experiment for seed ${seed} completed successfully."
-    else
-        echo "❌ Experiment for seed ${seed} failed with exit code ${script_exit_code}."
-    fi
-    echo "------------------------------------------------------"
-    echo ""
+        echo "Starting Python experiment script for seed ${seed}..."
+        ./run_experiment_queue.py \
+            -okbe \
+            --nohup \
+            --queue ltari \
+            --seed "$seed" \
+            --google-drive-path "${CURRENT_SEED_LOCAL_OUTPUT_DIR}"
+        script_exit_code=$?
+
+        if [ ${script_exit_code} -eq 0 ]; then
+            echo "✅ Experiment for seed ${seed} completed successfully."
+        else
+            echo "❌ Experiment for seed ${seed} failed with exit code ${script_exit_code}."
+        fi
+        echo "------------------------------------------------------"
+    ) & # 将子 shell 放入后台执行
+
+    # 控制并行任务数量
+    # 当后台任务数量达到 MAX_JOBS 时，等待任一任务完成再继续
+    while [[ $(jobs -p | wc -l) -ge ${MAX_JOBS} ]]; do
+        sleep 1
+    done
 done
 
+# 等待所有后台任务执行完毕
+echo "⏳ Waiting for all background experiments to complete..."
+wait
+echo "All experiments have finished."
+echo ""
+
+# 所有实验完成后，开始同步
 echo "☁️ Syncing ALL results in ${LOCAL_BASE_STAGING_DIR} to ${GDRIVE_TARGET_BASE_PATH}"
 rclone sync "${LOCAL_BASE_STAGING_DIR}" "${GDRIVE_TARGET_BASE_PATH}" --progress
 sync_exit_code=$?
@@ -41,7 +60,6 @@ sync_exit_code=$?
 if [ ${sync_exit_code} -eq 0 ]; then
     echo "👍 Global sync completed successfully."
 
-    # 同步成功后删除本地暂存目录
     if [ -d "${LOCAL_BASE_STAGING_DIR}" ]; then
         echo "🗑️ Deleting local staging directory: ${LOCAL_BASE_STAGING_DIR}"
         rm -rf "${LOCAL_BASE_STAGING_DIR}"
