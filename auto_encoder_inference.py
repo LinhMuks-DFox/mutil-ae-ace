@@ -80,29 +80,42 @@ def main():
     # 注意：需确保 get_index_to_category 可用，此处假设它是全局或已导入
     # category_map = get_index_to_category() 
     # 临时模拟 map 以保证代码可运行，实际请替换为你的导入
-    category_map = {i: f"class_{i}" for i in range(50)} 
+    category_map = get_index_to_category()
 
     train_set, test_set, val_set = load_dataset(data_path)
     
-    # 定义需要处理的数据集 splits
     datasets_to_process = {
-        "train": train_set,
-        # "test": test_set,   # 如需处理测试集可取消注释
-        # "val": val_set
-    }
+            "train": train_set,
+            "test": test_set,  # 确保这里已取消注释
+            "val": val_set     # 确保这里已取消注释
+        }
 
-    # 4. 执行处理循环
+    # 1. 初始化列表用于收集数据
+    all_X_list = []
+    all_y_list = []
+
+    # 2. 执行处理循环
     for split_name, dataset in datasets_to_process.items():
         print(f"Processing {split_name} set...")
         
         grouped = group_data_by_category(dataset, category_map)
         X, y = collect_latents(grouped, to_latent, device)
         
-        # 5. 保存结果 (文件名包含分支信息)
-        file_prefix = f"{branch_name}_{split_name}"
-        np.save(f"{file_prefix}_X.npy", X)
-        np.save(f"{file_prefix}_y.npy", y)
-        print(f"Saved: {file_prefix}_X.npy, {file_prefix}_y.npy")
+        # 将当前数据集的结果添加到列表中
+        all_X_list.append(X)
+        all_y_list.append(y)
+
+    # 3. 合并所有数据 (假设 axis 0 是样本维度)
+    final_X = np.concatenate(all_X_list, axis=0)
+    final_y = np.concatenate(all_y_list, axis=0)
+
+    # 4. 保存合并后的结果
+    file_prefix = f"{branch_name}_all"
+    np.save(f"visualize/{file_prefix}_X.npy", final_X)
+    np.save(f"visualize/{file_prefix}_y.npy", final_y)
+    
+    print(f"Saved merged datasets to: {file_prefix}_X.npy, {file_prefix}_y.npy")
+    print(f"Total samples: {final_X.shape}")
 
 if __name__ == "__main__":
     main()
