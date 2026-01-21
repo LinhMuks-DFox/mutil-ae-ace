@@ -201,3 +201,6 @@ compile_commands.json
 *.npy
 *.wav
 temp*/
+
+*.csv
+*.pdf
